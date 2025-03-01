@@ -24,7 +24,7 @@ const sizes = [
 ];
 
 // Add other common sizes that Chrome might expect
-const otherSizes = [96, 128, 144, 152, 384].map(size => ({
+const otherSizes = [96, 128, 144, 152, 167, 180, 384].map(size => ({
   size, 
   source: size < 400 ? SOURCE_SVG_192 : SOURCE_SVG_512
 }));
