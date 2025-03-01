@@ -2,7 +2,8 @@
 
 import { Layout } from '@/components/layout/Layout';
 import { useBudget } from '@/context/BudgetContext';
-import { Currency } from '@/types';
+import { useAuth } from '@/context/AuthContext';
+import { Currency, Income } from '@/types';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -21,6 +22,7 @@ export default function NuevoIngreso() {
 function IncomeForm() {
   const router = useRouter();
   const { addIncome, selectedCurrency, isLoading: contextLoading, error: contextError } = useBudget();
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     description: '',
     amount: '',
@@ -28,7 +30,7 @@ function IncomeForm() {
     currency: selectedCurrency,
     category: 'salario',
     isRecurring: false,
-    recurringFrequency: 'mensual'
+    recurringFrequency: 'monthly'
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -105,11 +107,12 @@ function IncomeForm() {
         currency: formData.currency as Currency,
         category: formData.category,
         isRecurring: formData.isRecurring,
-        recurringFrequency: formData.isRecurring ? formData.recurringFrequency : undefined
+        recurringFrequency: formData.isRecurring ? formData.recurringFrequency : undefined,
+        user_id: user?.id || ''
       };
       
       console.log('Sending income data to addIncome:', incomeData);
-      await addIncome(incomeData);
+      await addIncome(incomeData as Income);
       
       // Explicitly reload page instead of just redirecting
       setTimeout(() => {

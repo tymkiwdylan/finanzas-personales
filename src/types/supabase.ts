@@ -21,6 +21,7 @@ export interface Database {
           recurring_interval?: string | null
           created_at: string
           updated_at: string
+          user_id: string
         }
         Insert: {
           id?: string
@@ -33,6 +34,7 @@ export interface Database {
           recurring_interval?: string | null
           created_at?: string
           updated_at?: string
+          user_id: string
         }
         Update: {
           id?: string
@@ -45,6 +47,7 @@ export interface Database {
           recurring_interval?: string | null
           created_at?: string
           updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -60,6 +63,7 @@ export interface Database {
           recurring_interval?: string | null
           created_at: string
           updated_at: string
+          user_id: string
         }
         Insert: {
           id?: string
@@ -72,6 +76,7 @@ export interface Database {
           recurring_interval?: string | null
           created_at?: string
           updated_at?: string
+          user_id: string
         }
         Update: {
           id?: string
@@ -84,6 +89,7 @@ export interface Database {
           recurring_interval?: string | null
           created_at?: string
           updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -94,6 +100,7 @@ export interface Database {
           exchange_rate: number
           created_at: string
           updated_at: string
+          user_id: string
         }
         Insert: {
           id?: string
@@ -101,6 +108,7 @@ export interface Database {
           exchange_rate: number
           created_at?: string
           updated_at?: string
+          user_id: string
         }
         Update: {
           id?: string
@@ -108,6 +116,7 @@ export interface Database {
           exchange_rate?: number
           created_at?: string
           updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }

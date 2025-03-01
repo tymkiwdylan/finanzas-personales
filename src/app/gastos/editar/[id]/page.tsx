@@ -2,7 +2,8 @@
 
 import { Layout } from '@/components/layout/Layout';
 import { useBudget } from '@/context/BudgetContext';
-import { Currency, Expense } from '@/types';
+import { useAuth } from '@/context/AuthContext';
+import { Currency, Expense, ExpenseCategory } from '@/types';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useParams } from 'next/navigation';
@@ -25,6 +26,7 @@ export default function EditarGasto() {
 function ExpenseEditForm({ expenseId }: { expenseId: string }) {
   const router = useRouter();
   const { currentBudget, updateExpense } = useBudget();
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     description: '',
     amount: '',
@@ -61,11 +63,11 @@ function ExpenseEditForm({ expenseId }: { expenseId: string }) {
         setFormData({
           description: expense.description,
           amount: expense.amount.toString(),
-          date: expense.date,
+          date: expense.date.toISOString(),
           currency: expense.currency,
           category: expense.category,
           isRecurring: expense.isRecurring || false,
-          recurrenceType: expense.recurrenceType || 'monthly'
+          recurrenceType: expense.recurringFrequency || 'monthly'
         });
       } else {
         setNotFound(true);
@@ -135,11 +137,12 @@ function ExpenseEditForm({ expenseId }: { expenseId: string }) {
     updateExpense(expenseId, {
       description: formData.description,
       amount: Number(formData.amount),
-      date: formData.date,
+      date: new Date(formData.date),
       currency: formData.currency,
-      category: formData.category,
+      category: formData.category as ExpenseCategory,
       isRecurring: formData.isRecurring,
-      recurrenceType: formData.isRecurring ? formData.recurrenceType : undefined
+      recurringFrequency:  formData.recurrenceType as 'monthly' | 'daily' | 'weekly' | 'yearly' | undefined,
+      user_id: user?.id || ''
     });
     
     router.push('/gastos');

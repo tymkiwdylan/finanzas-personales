@@ -137,12 +137,20 @@ function ExpensesList() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredExpenses.map((expense: Expense) => (
-                  <tr key={expense.id} className="hover:bg-gray-50">
+                  <tr key={expense.id} className={`hover:bg-gray-50 ${expense.isRecurring ? 'bg-blue-50' : ''}`}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {new Date(expense.date).toLocaleDateString('es-AR')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       {expense.description}
+                      {expense.isRecurring && (
+                        <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                          Recurrente {expense.recurringFrequency === 'daily' ? 'diario' : 
+                                      expense.recurringFrequency === 'weekly' ? 'semanal' : 
+                                      expense.recurringFrequency === 'monthly' ? 'mensual' : 
+                                      expense.recurringFrequency === 'yearly' ? 'anual' : ''}
+                        </span>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">
                       {expense.category}

@@ -2,7 +2,8 @@
 
 import { Layout } from '@/components/layout/Layout';
 import { useBudget } from '@/context/BudgetContext';
-import { Currency } from '@/types';
+import { useAuth } from '@/context/AuthContext';
+import { Currency, Income, IncomeCategory } from '@/types';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useParams } from 'next/navigation';
@@ -25,11 +26,13 @@ export default function EditarIngreso() {
 function IncomeEditForm({ incomeId }: { incomeId: string }) {
   const router = useRouter();
   const { currentBudget, updateIncome } = useBudget();
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     description: '',
     amount: '',
     date: '',
     currency: 'ARS' as Currency,
+    category: 'salario' as IncomeCategory,
     isRecurring: false,
     recurrenceType: 'monthly'
   });
@@ -45,10 +48,11 @@ function IncomeEditForm({ incomeId }: { incomeId: string }) {
         setFormData({
           description: income.description,
           amount: income.amount.toString(),
-          date: income.date,
+          date: income.date.toISOString(),
           currency: income.currency,
+          category: income.category,
           isRecurring: income.isRecurring || false,
-          recurrenceType: income.recurrenceType || 'monthly'
+          recurrenceType: income.recurringFrequency || 'monthly'
         });
       } else {
         setNotFound(true);
@@ -114,10 +118,12 @@ function IncomeEditForm({ incomeId }: { incomeId: string }) {
     updateIncome(incomeId, {
       description: formData.description,
       amount: Number(formData.amount),
-      date: formData.date,
+      date: new Date(formData.date),
       currency: formData.currency,
+      category: formData.category,
       isRecurring: formData.isRecurring,
-      recurrenceType: formData.isRecurring ? formData.recurrenceType : undefined
+      recurringFrequency: formData.isRecurring ? formData.recurrenceType as 'monthly' | 'daily' | 'weekly' | 'yearly' : undefined,
+      user_id: user?.id || ''
     });
     
     router.push('/ingresos');
@@ -195,6 +201,23 @@ function IncomeEditForm({ incomeId }: { incomeId: string }) {
             >
               <option value="ARS">ARS</option>
               <option value="USD">USD</option>
+            </select>
+          </div>
+
+          {/* Category */}
+          <div>
+            <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+              Categoría <span className="text-red-600">*</span>
+            </label>
+            <select
+              id="category"
+              name="category"
+              value={formData.category}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500"
+            >
+              <option value="salario">Salario</option>
+              <option value="otros">Otros</option>
             </select>
           </div>
 

@@ -61,7 +61,7 @@ function ExpenseStatistics() {
     .sort((a, b) => b[1] - a[1]);
     
   // Calculate total expenses
-  const totalExpenses = sortedCategories.reduce((sum, [_, amount]) => sum + amount, 0);
+  const totalExpenses = sortedCategories.reduce((sum, [, amount]) => sum + amount, 0);
   
   // Calculate percentages
   const categoriesWithPercentage = sortedCategories.map(([category, amount]) => ({

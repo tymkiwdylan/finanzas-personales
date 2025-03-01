@@ -2,16 +2,37 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useBudget } from '@/context/BudgetContext';
+import { useAuth } from '@/context/AuthContext';
 import { Currency } from '@/types';
-import { Menu, X } from 'lucide-react'; 
+import { LogOut, Menu, User, X } from 'lucide-react';
+import { updateUserSettings as updateUserSettingsInDb } from '@/utils/supabase';
 
 export function Header() {
-  const { selectedCurrency, setSelectedCurrency } = useBudget();
+  const { selectedCurrency, setSelectedCurrency, exchangeRate, userSettings, setUserSettings } = useBudget();
+  const { user, signOut, isLoading } = useAuth();
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const handleCurrencyChange = (currency: Currency) => {
+  const handleCurrencyChange = async (currency: Currency) => {
     setSelectedCurrency(currency);
+    
+    // Also update the user settings in the database
+    try {
+      await updateUserSettingsInDb({
+        default_currency: currency,
+        exchange_rate: exchangeRate
+      });
+      
+      // Update the user settings in context
+      setUserSettings(prev => ({
+        ...prev,
+        preferredCurrency: currency
+      }));
+    } catch (error) {
+      console.error('Error saving currency preference:', error);
+    }
   };
 
   return (
@@ -49,6 +70,31 @@ export function Header() {
               USD
             </button>
           </div>
+          
+          {isLoading ? (
+            <div className="animate-pulse px-3 py-1 bg-sky-600 rounded">Cargando...</div>
+          ) : user ? (
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center">
+                <User className="h-4 w-4 mr-1" />
+                <span className="text-sm">{user.email?.split('@')[0]}</span>
+              </div>
+              <button
+                onClick={async () => {
+                  await signOut();
+                  router.push('/auth/login');
+                }}
+                className="flex items-center text-sm hover:text-sky-200"
+              >
+                <LogOut className="h-4 w-4 mr-1" />
+                Salir
+              </button>
+            </div>
+          ) : (
+            <Link href="/auth/login" className="px-3 py-1 bg-sky-600 hover:bg-sky-500 rounded">
+              Iniciar sesión
+            </Link>
+          )}
         </nav>
         
         {/* Mobile menu button */}
@@ -131,6 +177,38 @@ export function Header() {
               >
                 USD
               </button>
+            </div>
+            
+            <div className="border-t border-sky-600 pt-3 pb-3">
+              {isLoading ? (
+                <div className="animate-pulse px-3 py-1 bg-sky-600 rounded">Cargando...</div>
+              ) : user ? (
+                <div className="space-y-3">
+                  <div className="flex items-center">
+                    <User className="h-4 w-4 mr-2" />
+                    <span>{user.email}</span>
+                  </div>
+                  <button
+                    onClick={async () => {
+                      await signOut();
+                      setMobileMenuOpen(false);
+                      router.push('/auth/login');
+                    }}
+                    className="flex items-center hover:text-sky-200"
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Cerrar sesión
+                  </button>
+                </div>
+              ) : (
+                <Link 
+                  href="/auth/login" 
+                  className="block px-3 py-1 bg-sky-600 hover:bg-sky-500 rounded text-center"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Iniciar sesión
+                </Link>
+              )}
             </div>
           </nav>
         </div>

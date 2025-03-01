@@ -106,12 +106,20 @@ function IncomeList() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {sortedIncomes.map((income: Income) => (
-                  <tr key={income.id} className="hover:bg-gray-50">
+                  <tr key={income.id} className={`hover:bg-gray-50 ${income.isRecurring ? 'bg-green-50' : ''}`}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {new Date(income.date).toLocaleDateString('es-AR')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       {income.description}
+                      {income.isRecurring && (
+                        <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          Recurrente {income.recurringFrequency === 'daily' ? 'diario' : 
+                                      income.recurringFrequency === 'weekly' ? 'semanal' : 
+                                      income.recurringFrequency === 'monthly' ? 'mensual' : 
+                                      income.recurringFrequency === 'yearly' ? 'anual' : ''}
+                        </span>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-medium">
                       {formatCurrency(

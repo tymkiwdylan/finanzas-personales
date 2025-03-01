@@ -35,7 +35,8 @@ export interface Transaction {
   date: Date;
   category: ExpenseCategory | IncomeCategory;
   isRecurring: boolean;
-  recurringFrequency?: 'mensual' | 'semanal' | 'quincenal' | 'anual';
+  recurringFrequency?: 'daily' | 'weekly' | 'monthly' | 'yearly';
+  user_id: string;
 }
 
 // Expense and Income extend Transaction
@@ -57,6 +58,7 @@ export interface MonthlyBudget {
   savingsGoal?: number;
   preferredCurrency: Currency;
   exchangeRate?: number; // For ARS to USD
+  user_id: string;
 }
 
 // User Settings
@@ -66,4 +68,5 @@ export interface UserSettings {
   monthlyIncome?: number;
   monthlySavingsGoal?: number;
   recurringExpenses: Expense[];
+  user_id: string;
 }

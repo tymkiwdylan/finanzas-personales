@@ -2,11 +2,12 @@
 
 import { Layout } from '@/components/layout/Layout';
 import { useBudget } from '@/context/BudgetContext';
-import { Currency } from '@/types';
+import { useAuth } from '@/context/AuthContext';
+import { Currency, ExpenseCategory } from '@/types';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import ErrorMessage from '@/components/ErrorMessage';
-import LoadingSpinner from '@/components/LoadingSpinner';
+// import LoadingSpinner from '@/components/LoadingSpinner';
 
 export default function NuevoGasto() {
   return (
@@ -22,7 +23,8 @@ export default function NuevoGasto() {
 
 function ExpenseForm() {
   const router = useRouter();
-  const { addExpense, selectedCurrency, isLoading, error: contextError } = useBudget();
+  const { addExpense, selectedCurrency, error: contextError } = useBudget();
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     description: '',
     amount: '',
@@ -33,7 +35,7 @@ function ExpenseForm() {
     recurringFrequency: 'monthly'
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  // const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Common expense categories
@@ -108,7 +110,7 @@ function ExpenseForm() {
       return;
     }
     
-    setIsSubmitting(true);
+    // setIsSubmitting(true);
     setError(null);
     
     try {
@@ -127,9 +129,10 @@ function ExpenseForm() {
         amount: Number(formData.amount),
         date: new Date(formData.date), // Ensure date is a Date object
         currency: formData.currency as Currency,
-        category: formData.category,
+        category: formData.category as ExpenseCategory,
         isRecurring: formData.isRecurring,
-        recurringFrequency: formData.isRecurring ? formData.recurringFrequency : undefined
+        recurringFrequency: formData.isRecurring ? formData.recurringFrequency as 'monthly' | 'daily' | 'weekly' | 'yearly' : undefined,
+        user_id: user?.id || ''
       });
 
       // Explicitly reload page instead of just redirecting
@@ -140,13 +143,13 @@ function ExpenseForm() {
       console.error('Error al añadir gasto:', err);
       setError('Ocurrió un error al guardar el gasto. Por favor intente nuevamente.');
     } finally {
-      setIsSubmitting(false);
+      
     }
   };
 
   return (
     <div>
-      {(error || contextError) && <ErrorMessage message={error || contextError} />}
+      {(error || contextError) && <ErrorMessage message={error || contextError || ''} />}
       <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Description */}

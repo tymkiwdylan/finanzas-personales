@@ -15,13 +15,16 @@ import {
   updateIncomeInDb,
   deleteIncomeFromDb,
   fetchUserSettings,
-  updateUserSettings as updateUserSettingsInDb
+  updateUserSettings as updateUserSettingsInDb,
+  getCurrentUserId
 } from '@/utils/supabase';
+import { useAuth } from './AuthContext';
 
 type BudgetContextType = {
   currentBudget: MonthlyBudget | null;
   allBudgets: MonthlyBudget[];
   userSettings: UserSettings;
+  setUserSettings: React.Dispatch<React.SetStateAction<UserSettings>>;
   exchangeRate: number;
   selectedCurrency: Currency;
   isLoading: boolean;
@@ -43,11 +46,13 @@ const defaultUserSettings: UserSettings = {
   name: 'Usuario',
   preferredCurrency: 'ARS',
   recurringExpenses: [],
+  user_id: '', // This will be set properly in the component
 };
 
 const BudgetContext = createContext<BudgetContextType | undefined>(undefined);
 
 export function BudgetProvider({ children }: { children: ReactNode }) {
+  const { user, isLoading: authLoading } = useAuth();
   const [allBudgets, setAllBudgets] = useState<MonthlyBudget[]>([]);
   const [currentBudget, setCurrentBudget] = useState<MonthlyBudget | null>(null);
   const [userSettings, setUserSettings] = useState<UserSettings>(defaultUserSettings);
@@ -56,20 +61,215 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Initialize or load data on first mount
+  // Format date for display
+  const formatDateDisplay = (date: Date | string): string => {
+    if (!date) return '';
+    
+    try {
+      const d = typeof date === 'string' ? new Date(date) : date;
+      return d.toISOString().split('T')[0];
+    } catch (error) {
+      console.error('Error formatting date for display:', error, date);
+      return '';
+    }
+  };
+
+  // Group expenses and incomes by month
+  const groupByMonth = async (expenses: Expense[], incomes: Income[]) => {
+    const budgetsByMonthYear: Record<string, MonthlyBudget> = {};
+    let userId = '';
+    
+    try {
+      userId = await getCurrentUserId();
+    } catch (error) {
+      console.error('Error getting user ID for budgets:', error);
+      // If we can't get the user ID, we'll use an empty string
+      // This should only happen if the user is not authenticated
+    }
+    
+    // Process expenses
+    expenses.forEach(expense => {
+      const month = expense.date.getMonth();
+      const year = expense.date.getFullYear();
+      const key = `${month}-${year}`;
+      
+      if (!budgetsByMonthYear[key]) {
+        budgetsByMonthYear[key] = {
+          id: uuidv4(),
+          month,
+          year,
+          expenses: [],
+          incomes: [],
+          preferredCurrency: userSettings.preferredCurrency,
+          exchangeRate,
+          user_id: userId,
+        };
+      }
+      
+      budgetsByMonthYear[key].expenses.push(expense);
+    });
+    
+    // Process incomes
+    incomes.forEach(income => {
+      const month = income.date.getMonth();
+      const year = income.date.getFullYear();
+      const key = `${month}-${year}`;
+      
+      if (!budgetsByMonthYear[key]) {
+        budgetsByMonthYear[key] = {
+          id: uuidv4(),
+          month,
+          year,
+          expenses: [],
+          incomes: [],
+          preferredCurrency: userSettings.preferredCurrency,
+          exchangeRate,
+          user_id: userId,
+        };
+      }
+      
+      budgetsByMonthYear[key].incomes.push(income);
+    });
+    
+    return budgetsByMonthYear;
+  };
+
+  // Load data from database function declaration has been moved above the useEffect
+
+  // Initialize data on component mount
+  // Define loadData outside useEffect to avoid dependency issues
+  const loadData = async () => {
+    // Don't load data if user is not authenticated
+    if (!user) {
+      setIsLoading(false);
+      return;
+    }
+    
+    setError(null);
+    setIsLoading(true);
+    
+    try {
+      // Fetch expenses and incomes from database - these now filter by user_id
+      const expenses = await fetchExpenses();
+      const incomes = await fetchIncomes();
+
+      console.log(expenses, incomes)
+      
+      // Process expenses and incomes to match our app format
+      console.log('Raw expenses from DB:', expenses);
+      const processedExpenses = expenses.map((exp: any) => {
+        // Ensure we create a proper date object
+        let expDate;
+        try {
+          expDate = new Date(exp.date);
+          if (isNaN(expDate.getTime())) {
+            console.error(`Invalid date for expense: ${exp.date}, using current date`);
+            expDate = new Date();
+          }
+        } catch (err) {
+          console.error(`Error parsing date for expense: ${exp.date}`, err);
+          expDate = new Date();
+        }
+        
+        return {
+          id: exp.id,
+          description: exp.description,
+          amount: exp.amount,
+          date: expDate,
+          currency: exp.currency || 'ARS',
+          category: exp.category || 'otros',
+          isRecurring: exp.is_recurring || false,
+          recurringFrequency: exp.recurring_frequency || undefined,
+          user_id: exp.user_id
+        };
+      });
+      
+      const processedIncomes = incomes.map((inc: any) => {
+        // Ensure we create a proper date object
+        let incDate;
+        try {
+          incDate = new Date(inc.date);
+          if (isNaN(incDate.getTime())) {
+            console.error(`Invalid date for income: ${inc.date}, using current date`);
+            incDate = new Date();
+          }
+        } catch (err) {
+          console.error(`Error parsing date for income: ${inc.date}`, err);
+          incDate = new Date();
+        }
+        
+        return {
+          id: inc.id,
+          description: inc.description,
+          amount: inc.amount,
+          date: incDate,
+          currency: inc.currency || 'ARS',
+          category: inc.category || 'otros',
+          isRecurring: inc.is_recurring || false,
+          recurringFrequency: inc.recurring_frequency || undefined,
+          user_id: inc.user_id
+        };
+      });
+      
+      // Group expenses and incomes by month
+      const groupedBudgets = await groupByMonth(processedExpenses, processedIncomes);
+      
+      // Set all budgets
+      setAllBudgets(Object.values(groupedBudgets));
+      
+      // Set current budget to the one for the current month
+      const today = new Date();
+      const currentMonthYear = `${today.getMonth()}-${today.getFullYear()}`;
+      
+      if (groupedBudgets[currentMonthYear]) {
+        setCurrentBudget(groupedBudgets[currentMonthYear]);
+      } else {
+        // Create a new budget for the current month
+        const newBudget: MonthlyBudget = {
+          id: uuidv4(),
+          month: today.getMonth(),
+          year: today.getFullYear(),
+          expenses: [],
+          incomes: [],
+          preferredCurrency: userSettings.preferredCurrency,
+          exchangeRate,
+          user_id: user?.id || '',
+        };
+        
+        setCurrentBudget(newBudget);
+        setAllBudgets(prev => [...prev, newBudget]);
+      }
+    } catch (error) {
+      console.error('Error loading data:', error);
+      setError('Error al cargar los datos');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     const initializeData = async () => {
+      // Don't initialize if user is not authenticated
+      if (!user) {
+        setIsLoading(false);
+        return;
+      }
+      
       setIsLoading(true);
       setError(null);
       
       try {
-        // Fetch user settings from database
+        // Get current user's ID
+        const userId = user.id;
+        
+        // Fetch user settings from database - now filtered by user_id
         const settings = await fetchUserSettings();
         if (settings) {
           setUserSettings({
             name: settings.default_currency === 'ARS' ? 'Usuario' : 'User',
             preferredCurrency: settings.default_currency as Currency,
-            recurringExpenses: []
+            recurringExpenses: [],
+            user_id: userId
           });
           setSelectedCurrency(settings.default_currency as Currency);
           setExchangeRate(settings.exchange_rate);
@@ -78,7 +278,7 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
           const rate = await getExchangeRate();
           setExchangeRate(rate);
           
-          // Save default settings to database
+          // Create user settings with current user's ID
           await updateUserSettingsInDb({
             default_currency: 'ARS',
             exchange_rate: rate
@@ -96,25 +296,29 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
       }
     };
     
-    initializeData();
+    if (!authLoading) { // Only initialize after auth is loaded
+      initializeData();
+    }
     
     // Set up exchange rate refresh every hour
     const interval = setInterval(async () => {
-      try {
-        const rate = await getExchangeRate();
-        setExchangeRate(rate);
-        
-        // Also update in database
-        await updateUserSettingsInDb({
-          exchange_rate: rate
-        });
-      } catch (error) {
-        console.error('Error refreshing exchange rate:', error);
+      if (user) { // Only refresh if user is authenticated
+        try {
+          const rate = await getExchangeRate();
+          setExchangeRate(rate);
+          
+          // Also update in database
+          await updateUserSettingsInDb({
+            exchange_rate: rate
+          });
+        } catch (error) {
+          console.error('Error refreshing exchange rate:', error);
+        }
       }
     }, 3600000);
     
     return () => clearInterval(interval);
-  }, []);
+  }, [user, authLoading]); // Depend on user and auth loading state
   
   // Create a new budget if none exists for current month
   useEffect(() => {
@@ -138,6 +342,7 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
           incomes: [],
           preferredCurrency: userSettings.preferredCurrency,
           exchangeRate,
+          user_id: user?.id || '',
         };
         
         setCurrentBudget(newBudget);
@@ -296,10 +501,8 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
         )
       );
       
-      // Reload data to ensure everything is in sync
-      console.log('Reloading data after adding expense...');
-      await loadData();
-      console.log('Data reloaded after adding expense');
+      // No need to reload data here, we've already updated local state
+      console.log('Expense added successfully');
     } catch (error) {
       console.error('Error adding expense:', error);
       setError('Error al añadir el gasto');
@@ -347,10 +550,8 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
         )
       );
       
-      // Reload data to ensure everything is in sync
-      console.log('Reloading data after adding income...');
-      await loadData();
-      console.log('Data reloaded after adding income');
+      // No need to reload data here, we've already updated local state
+      console.log('Income added successfully');
     } catch (error) {
       console.error('Error adding income:', error);
       setError('Error al añadir el ingreso');
@@ -633,192 +834,130 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Load data from database
-  const loadData = async () => {
-    setError(null);
-    setIsLoading(true);
+  // Process recurring expenses and generate future entries
+  const processRecurringExpenses = (expenses: Expense[]): Expense[] => {
+    console.log('Processing recurring expenses...');
+    const today = new Date();
+    const futureExpenses: Expense[] = [];
     
-    try {
-      // Fetch expenses and incomes from database
-      const expenses = await fetchExpenses();
-      const incomes = await fetchIncomes();
-
-      console.log(expenses, incomes)
+    // Look for recurring expenses
+    expenses.forEach(expense => {
+      if (!expense.isRecurring) return;
       
-      // Process expenses and incomes to match our app format
-      console.log('Raw expenses from DB:', expenses);
-      const processedExpenses = expenses.map((exp: any) => {
-        // Ensure we create a proper date object
-        let expDate;
-        try {
-          expDate = new Date(exp.date);
-          if (isNaN(expDate.getTime())) {
-            console.error(`Invalid date for expense: ${exp.date}, using current date`);
-            expDate = new Date();
-          }
-        } catch (err) {
-          console.error(`Error parsing date for expense: ${exp.date}`, err);
-          expDate = new Date();
+      console.log(`Processing recurring expense: ${expense.description} with frequency ${expense.recurringFrequency}`);
+      
+      // Calculate how many future entries to generate
+      // We'll generate entries for the next 12 months for monthly, 1 year for weekly/daily, and 5 years for yearly
+      const expenseDate = new Date(expense.date);
+      // const futureDate = new Date(today); // Not used
+      const iterations = {
+        daily: 30, // Next 30 days
+        weekly: 12, // Next 12 weeks
+        monthly: 12, // Next 12 months
+        yearly: 5 // Next 5 years
+      };
+      
+      const iterationCount = iterations[expense.recurringFrequency as keyof typeof iterations];
+      
+      // Generate future instances starting from the next occurrence
+      for (let i = 1; i <= iterationCount; i++) {
+        // Clone the original expense
+        const futureExpense: Expense = {
+          ...expense,
+          id: uuidv4() // Generate a new ID for this instance
+        };
+        
+        // Calculate next date based on recurrence pattern
+        const nextDate = new Date(expenseDate);
+        
+        if (expense.recurringFrequency === 'daily') {
+          nextDate.setDate(expenseDate.getDate() + i);
+        } else if (expense.recurringFrequency === 'weekly') {
+          nextDate.setDate(expenseDate.getDate() + (i * 7));
+        } else if (expense.recurringFrequency === 'monthly') {
+          nextDate.setMonth(expenseDate.getMonth() + i);
+        } else if (expense.recurringFrequency === 'yearly') {
+          nextDate.setFullYear(expenseDate.getFullYear() + i);
         }
+        
+        // Only include future expenses
+        if (nextDate > today) {
+          futureExpense.date = nextDate;
+          futureExpense.description = `${expense.description} (Recurrente)`;
+          futureExpenses.push(futureExpense);
+          console.log(`Generated future expense: ${futureExpense.description} for ${nextDate.toLocaleDateString()}`);
+        }
+      }
+    });
+    
+    console.log(`Generated ${futureExpenses.length} future recurring expenses`);
+    return [...expenses, ...futureExpenses];
+  };
   
-        return {
-          id: exp.id,
-          description: exp.description,
-          amount: exp.amount,
-          date: expDate,
-          currency: exp.currency as Currency,
-          category: exp.category,
-          isRecurring: exp.recurring,
-          recurringFrequency: exp.recurring_interval // Changed from recurrenceType to recurringFrequency for consistency
+  // Process recurring incomes and generate future entries
+  const processRecurringIncomes = (incomes: Income[]): Income[] => {
+    console.log('Processing recurring incomes...');
+    const today = new Date();
+    const futureIncomes: Income[] = [];
+    
+    // Look for recurring incomes
+    incomes.forEach(income => {
+      if (!income.isRecurring) return;
+      
+      console.log(`Processing recurring income: ${income.description} with frequency ${income.recurringFrequency}`);
+      
+      // Calculate how many future entries to generate
+      const incomeDate = new Date(income.date);
+      // const futureDate = new Date(today); // Not used
+      const iterations = {
+        daily: 30, // Next 30 days
+        weekly: 12, // Next 12 weeks
+        monthly: 12, // Next 12 months
+        yearly: 5 // Next 5 years
+      };
+      
+      const iterationCount = iterations[income.recurringFrequency as keyof typeof iterations];
+      
+      // Generate future instances starting from the next occurrence
+      for (let i = 1; i <= iterationCount; i++) {
+        // Clone the original income
+        const futureIncome: Income = {
+          ...income,
+          id: uuidv4() // Generate a new ID for this instance
         };
-      });
-      
-      console.log('Processed expenses:', processedExpenses);
-      
-      console.log('Raw incomes from DB:', incomes);
-      const processedIncomes = incomes.map((inc: any) => {
-        // Ensure we create a proper date object
-        let incDate;
-        try {
-          incDate = new Date(inc.date);
-          if (isNaN(incDate.getTime())) {
-            console.error(`Invalid date for income: ${inc.date}, using current date`);
-            incDate = new Date();
-          }
-        } catch (err) {
-          console.error(`Error parsing date for income: ${inc.date}`, err);
-          incDate = new Date();
+        
+        // Calculate next date based on recurrence pattern
+        const nextDate = new Date(incomeDate);
+        
+        if (income.recurringFrequency === 'daily') {
+          nextDate.setDate(incomeDate.getDate() + i);
+        } else if (income.recurringFrequency === 'weekly') {
+          nextDate.setDate(incomeDate.getDate() + (i * 7));
+        } else if (income.recurringFrequency === 'monthly') {
+          nextDate.setMonth(incomeDate.getMonth() + i);
+        } else if (income.recurringFrequency === 'yearly') {
+          nextDate.setFullYear(incomeDate.getFullYear() + i);
         }
         
-        const processedIncome = {
-          id: inc.id,
-          description: inc.description,
-          amount: inc.amount,
-          date: incDate,
-          currency: inc.currency as Currency,
-          category: inc.category as IncomeCategory,
-          isRecurring: inc.recurring,
-          recurringFrequency: inc.recurring_interval
-        };
-        return processedIncome;
-      });
-      
-      console.log('Processed incomes:', processedIncomes);
-      
-      // Group by month and year
-      const budgetsByMonthYear = new Map<string, any>();
-      
-      // Process expenses
-      processedExpenses.forEach(expense => {
-        // Use the expense.date directly since we already created a proper Date object
-        const month = expense.date.getMonth();
-        const year = expense.date.getFullYear();
-        const key = `${month}-${year}`;
-        console.log(`Expense date: ${expense.date.toISOString()}, month: ${month}, year: ${year}, key: ${key}`);
-        
-        if (!budgetsByMonthYear.has(key)) {
-          budgetsByMonthYear.set(key, {
-            id: uuidv4(),
-            month: month,
-            year,
-            expenses: [],
-            incomes: [],
-            preferredCurrency: selectedCurrency,
-            exchangeRate,
-          });
+        // Only include future incomes
+        if (nextDate > today) {
+          futureIncome.date = nextDate;
+          futureIncome.description = `${income.description} (Recurrente)`;
+          futureIncomes.push(futureIncome);
+          console.log(`Generated future income: ${futureIncome.description} for ${nextDate.toLocaleDateString()}`);
         }
-        
-        budgetsByMonthYear.get(key).expenses.push(expense);
-      });
-      
-      // Process incomes
-      processedIncomes.forEach(income => {
-        // Use the income.date directly since we already created a proper Date object
-        const month = income.date.getMonth();
-        const year = income.date.getFullYear();
-        const key = `${month}-${year}`;
-        console.log(`Income date: ${income.date.toISOString()}, month: ${month}, year: ${year}, key: ${key}`);
-        
-        if (!budgetsByMonthYear.has(key)) {
-          budgetsByMonthYear.set(key, {
-            id: uuidv4(),
-            month,
-            year,
-            expenses: [],
-            incomes: [],
-            preferredCurrency: selectedCurrency,
-            exchangeRate,
-          });
-        }
-        
-        budgetsByMonthYear.get(key).incomes.push(income);
-      });
-      
-      // Convert map to array
-      const budgets = Array.from(budgetsByMonthYear.values());
-      
-      // Check if we have any budgets
-      if (budgets.length === 0) {
-        console.log('No budgets were created from the processed data');
-      } else {
-        console.log(`Created ${budgets.length} budgets from processed data`);
       }
-      
-      // Log all budget months and years for debugging
-      budgets.forEach(budget => {
-        console.log(`Budget: Month=${budget.month} (${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][budget.month]}), Year=${budget.year}, ${budget.expenses.length} expenses, ${budget.incomes.length} incomes`);
-      });
-      
-      console.log('Processed budgets:', budgets);
-      setAllBudgets(budgets);
-      
-      // Set current budget to the most recent one
-      const today = new Date();
-      const currentMonth = today.getMonth();
-      const currentYear = today.getFullYear();
-      
-      // JavaScript months are 0-based: 0=Jan, 1=Feb, 2=Mar, etc.
-      const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-      console.log(`Today's date: ${today.toLocaleDateString()}`);  
-      console.log(`Looking for budget for ${monthNames[currentMonth]} (month index ${currentMonth}) and year ${currentYear}`);
-      const currentBudget = budgets.find(
-        (budget: MonthlyBudget) =>
-          budget.month === currentMonth && budget.year === currentYear
-      );
-      
-      console.log('Found current budget:', currentBudget);
-      if (currentBudget) {
-        console.log(`Setting current budget for ${currentMonth}/${currentYear} with ${currentBudget.expenses.length} expenses and ${currentBudget.incomes.length} incomes`);
-        setCurrentBudget(currentBudget);
-      } else {
-        console.warn('No current budget found for the current month and year!');
-        // Create an empty budget for the current month if none exists
-        const newBudget: MonthlyBudget = {
-          id: uuidv4(),
-          month: currentMonth,
-          year: currentYear,
-          expenses: [],
-          incomes: [],
-          preferredCurrency: selectedCurrency,
-          exchangeRate,
-        };
-        
-        console.log('Created new empty budget for current month:', newBudget);
-        setCurrentBudget(newBudget);
-        setAllBudgets(prev => [...prev, newBudget]);
-      }
-    } catch (error) {
-      console.error('Error loading data from database:', error);
-      setError('Error al cargar los datos');
-    } finally {
-      setIsLoading(false);
-    }
+    });
+    
+    console.log(`Generated ${futureIncomes.length} future recurring incomes`);
+    return [...incomes, ...futureIncomes];
   };
 
   const value = {
     currentBudget,
     allBudgets,
     userSettings,
+    setUserSettings,
     exchangeRate,
     selectedCurrency,
     isLoading,
