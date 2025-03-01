@@ -10,7 +10,7 @@ import { LogOut, Menu, User, X } from 'lucide-react';
 import { updateUserSettings as updateUserSettingsInDb } from '@/utils/supabase';
 
 export function Header() {
-  const { selectedCurrency, setSelectedCurrency, exchangeRate, userSettings, setUserSettings } = useBudget();
+  const { selectedCurrency, setSelectedCurrency, exchangeRate, setUserSettings } = useBudget();
   const { user, signOut, isLoading } = useAuth();
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
