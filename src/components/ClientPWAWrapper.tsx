@@ -5,6 +5,7 @@ import { registerServiceWorker } from '@/utils/registerSW';
 import PWAInstaller from './PWAInstaller';
 import PwaHead from './PwaHead';
 import PwaInstallGuide from './PwaInstallGuide';
+import A2HSInstructions from './A2HSInstructions';
 
 export default function ClientPWAWrapper() {
   useEffect(() => {
@@ -24,6 +25,7 @@ export default function ClientPWAWrapper() {
       <PwaHead />
       <PwaInstallGuide />
       <PWAInstaller />
+      <A2HSInstructions />
     </>
   );
 }

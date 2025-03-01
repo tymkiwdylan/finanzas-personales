@@ -15,28 +15,53 @@ if (!fs.existsSync(OUTPUT_DIR)) {
   fs.mkdirSync(OUTPUT_DIR, { recursive: true });
 }
 
-// Generate 192x192 PNG
-sharp(SOURCE_SVG_192)
-  .resize(192, 192)
-  .png()
-  .toFile(path.join(OUTPUT_DIR, 'icon-192x192.png'))
-  .then(() => {
-    console.log('✅ Generated 192x192 PNG icon');
-  })
-  .catch(err => {
-    console.error('Error generating 192x192 icon:', err);
-  });
-
-// Generate 512x512 PNG
-sharp(SOURCE_SVG_512)
-  .resize(512, 512)
-  .png()
-  .toFile(path.join(OUTPUT_DIR, 'icon-512x512.png'))
-  .then(() => {
-    console.log('✅ Generated 512x512 PNG icon');
-  })
-  .catch(err => {
-    console.error('Error generating 512x512 icon:', err);
-  });
-
 console.log('Starting icon generation...');
+
+// Define standard sizes
+const sizes = [
+  { size: 192, source: SOURCE_SVG_192 },
+  { size: 512, source: SOURCE_SVG_512 },
+];
+
+// Add other common sizes that Chrome might expect
+const otherSizes = [96, 128, 144, 152, 384].map(size => ({
+  size, 
+  source: size < 400 ? SOURCE_SVG_192 : SOURCE_SVG_512
+}));
+
+// Process all icons
+[...sizes, ...otherSizes].forEach(({ size, source }) => {
+  // Regular icon
+  sharp(source)
+    .resize(size, size)
+    .png()
+    .toFile(path.join(OUTPUT_DIR, `icon-${size}x${size}.png`))
+    .then(() => {
+      console.log(`✅ Generated ${size}x${size} PNG icon`);
+    })
+    .catch(err => {
+      console.error(`Error generating ${size}x${size} icon:`, err);
+    });
+  
+  // Maskable icon (with padding for safe zone)
+  const padding = Math.floor(size * 0.1); // 10% padding
+  const safeSize = size - (padding * 2);
+  
+  sharp(source)
+    .resize(safeSize, safeSize)
+    .extend({
+      top: padding,
+      bottom: padding,
+      left: padding,
+      right: padding,
+      background: { r: 2, g: 132, b: 199, alpha: 1 } // Sky-600 color (#0284c7)
+    })
+    .png()
+    .toFile(path.join(OUTPUT_DIR, `maskable-${size}x${size}.png`))
+    .then(() => {
+      console.log(`✅ Generated maskable ${size}x${size} icon`);
+    })
+    .catch(err => {
+      console.error(`Error generating maskable ${size}x${size} icon:`, err);
+    });
+});

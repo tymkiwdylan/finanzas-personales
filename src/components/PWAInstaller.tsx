@@ -10,8 +10,8 @@ export default function PWAInstaller() {
     console.log('PWAInstaller component mounted');
 
     // Force show install button for testing if needed
-    // Uncomment the following line to always show the install button for testing
-    // setShowInstallButton(true);
+    // For debugging purposes, we'll show the button anyway
+    setShowInstallButton(true);
 
     // Handle PWA installation prompt
     window.addEventListener('beforeinstallprompt', (e) => {
@@ -57,6 +57,12 @@ export default function PWAInstaller() {
     
     if (!deferredPrompt) {
       console.log('No installation prompt available - this might happen if the app is already installed or does not meet installation criteria');
+      
+      // Provide instructions for manual installation
+      alert('Para instalar esta aplicación:\n\n' + 
+            '1. En Chrome: Haz clic en los tres puntos (⋮) en la esquina superior derecha\n' +
+            '2. Selecciona "Instalar Mi Presupuesto Personal"\n\n' +
+            'Si no ves esta opción, la aplicación podría no cumplir con todos los criterios de instalación.');
       return;
     }
 
