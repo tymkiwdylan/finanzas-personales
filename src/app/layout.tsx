@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { BudgetProvider } from "@/context/BudgetContext";
+import ClientPWAWrapper from "@/components/ClientPWAWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,12 +18,23 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Mi Presupuesto Personal",
   description: "Aplicación para gestionar presupuestos personales mensuales",
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Mi Presupuesto",
   },
+  applicationName: "Mi Presupuesto Personal",
+  manifest: "/manifest.json",
 };
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  themeColor: "#0284c7",
+};
+
+
 
 export default function RootLayout({
   children,
@@ -37,6 +49,7 @@ export default function RootLayout({
         <AuthProvider>
           <BudgetProvider>
             {children}
+            <ClientPWAWrapper />
           </BudgetProvider>
         </AuthProvider>
       </body>

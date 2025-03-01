@@ -1,0 +1,13 @@
+You'll need to create PNG versions of your icons:
+
+1. icon-192x192.png (192x192 pixels)
+2. icon-512x512.png (512x512 pixels)
+
+You can convert your existing SVG icons to PNG using tools like:
+- Online converters (e.g., https://svgtopng.com/)
+- Image editing software like Photoshop, GIMP, or Sketch
+- Command line tools like ImageMagick
+
+Example command with ImageMagick:
+convert -background none -size 192x192 /path/to/your/icon.svg icon-192x192.png
+convert -background none -size 512x512 /path/to/your/icon.svg icon-512x512.png
