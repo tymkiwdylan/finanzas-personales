@@ -1,101 +1,177 @@
-import Image from "next/image";
+'use client';
+
+import { Layout } from '@/components/layout/Layout';
+import { useBudget } from '@/context/BudgetContext';
+import { formatCurrency } from '@/utils/currency';
+import { PlusCircle, TrendingUp, ArrowDownCircle, PiggyBank } from 'lucide-react';
+import Link from 'next/link';
 
 export default function Home() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <Layout>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-sky-800 mb-6">Mi Presupuesto Personal</h1>
+        
+        <HomeContent />
+      </div>
+    </Layout>
+  );
+}
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+function HomeContent() {
+  const { currentBudget, selectedCurrency, exchangeRate } = useBudget();
+
+  // Calculate the important summary numbers
+  const totalIncome = currentBudget?.incomes.reduce(
+    (sum, income) => sum + (income.currency === selectedCurrency ? income.amount : 
+      income.currency === 'USD' ? income.amount * exchangeRate : income.amount / exchangeRate),
+    0
+  ) || 0;
+
+  const totalExpenses = currentBudget?.expenses.reduce(
+    (sum, expense) => sum + (expense.currency === selectedCurrency ? expense.amount : 
+      expense.currency === 'USD' ? expense.amount * exchangeRate : expense.amount / exchangeRate),
+    0
+  ) || 0;
+
+  const remaining = totalIncome - totalExpenses;
+  const savingsPercentage = totalIncome > 0 ? (remaining / totalIncome) * 100 : 0;
+
+  // Group expenses by category
+  const expensesByCategory = currentBudget?.expenses.reduce((acc, expense) => {
+    const amount = expense.currency === selectedCurrency ? expense.amount : 
+      expense.currency === 'USD' ? expense.amount * exchangeRate : expense.amount / exchangeRate;
+    
+    acc[expense.category] = (acc[expense.category] || 0) + amount;
+    return acc;
+  }, {} as Record<string, number>) || {};
+
+  // Top expenses categories
+  const topExpenses = Object.entries(expensesByCategory)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3);
+
+  return (
+    <div>
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <SummaryCard 
+          title="Ingresos Totales" 
+          value={formatCurrency(totalIncome, selectedCurrency)} 
+          icon={<TrendingUp className="h-8 w-8 text-green-500" />}
+          color="bg-green-50 border-green-200"
+        />
+        <SummaryCard 
+          title="Gastos Totales" 
+          value={formatCurrency(totalExpenses, selectedCurrency)} 
+          icon={<ArrowDownCircle className="h-8 w-8 text-red-500" />}
+          color="bg-red-50 border-red-200"
+        />
+        <SummaryCard 
+          title="Ahorro" 
+          value={formatCurrency(remaining, selectedCurrency)} 
+          icon={<PiggyBank className="h-8 w-8 text-sky-500" />}
+          color="bg-sky-50 border-sky-200"
+          subtitle={`${savingsPercentage.toFixed(1)}% de tus ingresos`}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Recent Expenses */}
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold text-gray-800">Gastos Recientes</h2>
+            <Link href="/gastos" className="text-sky-600 hover:text-sky-800 text-sm flex items-center">
+              Ver todos
+            </Link>
+          </div>
+          
+          {currentBudget?.expenses && currentBudget.expenses.length > 0 ? (
+            <div className="space-y-4">
+              {currentBudget.expenses.slice(-5).reverse().map((expense) => (
+                <div key={expense.id} className="flex justify-between items-center p-3 bg-gray-50 rounded border border-gray-100">
+                  <div>
+                    <p className="font-medium">{expense.description}</p>
+                    <p className="text-sm text-gray-500">
+                      {new Date(expense.date).toLocaleDateString('es-AR')} • {expense.category}
+                    </p>
+                  </div>
+                  <span className="text-red-600 font-medium">
+                    {formatCurrency(expense.currency === selectedCurrency ? expense.amount : 
+                      expense.currency === 'USD' ? expense.amount * exchangeRate : expense.amount / exchangeRate, 
+                      selectedCurrency)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500 py-4 text-center">No hay gastos registrados</p>
+          )}
+          
+          <div className="mt-6">
+            <Link href="/gastos/nuevo" className="w-full bg-sky-600 hover:bg-sky-700 text-white py-2 px-4 rounded flex items-center justify-center">
+              <PlusCircle className="h-5 w-5 mr-2" />
+              Agregar Gasto
+            </Link>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+        {/* Top Categories */}
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold text-gray-800">Principales Categorías</h2>
+            <Link href="/estadisticas" className="text-sky-600 hover:text-sky-800 text-sm flex items-center">
+              Ver estadísticas
+            </Link>
+          </div>
+          
+          {topExpenses.length > 0 ? (
+            <div className="space-y-4">
+              {topExpenses.map(([category, amount]) => (
+                <div key={category} className="mb-4">
+                  <div className="flex justify-between mb-1">
+                    <span className="text-gray-700 capitalize">{category}</span>
+                    <span className="text-gray-900 font-medium">{formatCurrency(amount, selectedCurrency)}</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2.5">
+                    <div 
+                      className="bg-sky-600 h-2.5 rounded-full" 
+                      style={{ width: `${Math.min(100, (amount / totalExpenses) * 100)}%` }}
+                    ></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500 py-4 text-center">No hay categorías para mostrar</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+interface SummaryCardProps {
+  title: string;
+  value: string;
+  icon: React.ReactNode;
+  color: string;
+  subtitle?: string;
+}
+
+function SummaryCard({ title, value, icon, color, subtitle }: SummaryCardProps) {
+  return (
+    <div className={`p-6 rounded-lg shadow-sm border ${color}`}>
+      <div className="flex justify-between items-start">
+        <div>
+          <h3 className="text-lg font-medium text-gray-700">{title}</h3>
+          <p className="text-2xl font-bold mt-2">{value}</p>
+          {subtitle && <p className="text-sm text-gray-500 mt-1">{subtitle}</p>}
+        </div>
+        <div>
+          {icon}
+        </div>
+      </div>
     </div>
   );
 }
