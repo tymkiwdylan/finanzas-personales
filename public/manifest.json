@@ -2,10 +2,15 @@
   "name": "Mi Presupuesto Personal",
   "short_name": "Presupuesto",
   "description": "Aplicación para gestionar presupuestos personales mensuales",
+  "id": "/",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
   "background_color": "#ffffff",
   "theme_color": "#0284c7",
+  "orientation": "portrait",
+  "categories": ["finance", "productivity"],
   "icons": [
     {
       "src": "/icons-png/icon-192x192.png",

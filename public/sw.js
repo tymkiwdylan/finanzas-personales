@@ -1,11 +1,14 @@
-const CACHE_NAME = 'mi-presupuesto-cache-v1';
+const CACHE_NAME = 'mi-presupuesto-cache-v2'; // Increment this version when making changes
 const urlsToCache = [
   '/',
   '/offline',
   '/icons-png/icon-192x192.png',
   '/icons-png/icon-512x512.png',
   '/favicon.ico',
-  '/manifest.json'
+  '/manifest.json',
+  // Add static assets that should be available offline
+  '/next.svg',
+  '/vercel.svg'
 ];
 
 // Instalación del Service Worker

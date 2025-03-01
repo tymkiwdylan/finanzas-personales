@@ -7,6 +7,12 @@ export default function PWAInstaller() {
   const [showInstallButton, setShowInstallButton] = useState(false);
 
   useEffect(() => {
+    console.log('PWAInstaller component mounted');
+
+    // Force show install button for testing if needed
+    // Uncomment the following line to always show the install button for testing
+    // setShowInstallButton(true);
+
     // Handle PWA installation prompt
     window.addEventListener('beforeinstallprompt', (e) => {
       // Prevent Chrome 67 and earlier from automatically showing the prompt
@@ -15,6 +21,7 @@ export default function PWAInstaller() {
       setDeferredPrompt(e);
       // Update UI to show the installation button
       setShowInstallButton(true);
+      console.log('Install prompt captured! Button should now be visible.');
     });
 
     // Handle installed PWA
@@ -26,13 +33,36 @@ export default function PWAInstaller() {
       // Clear the deferred prompt
       setDeferredPrompt(null);
     });
+
+    // Debug PWA criteria
+    // Check if running on HTTPS (required for PWA)
+    if (typeof window !== 'undefined') {
+      const isSecure = window.location.protocol === 'https:' || window.location.hostname === 'localhost';
+      console.log(`Running on ${isSecure ? 'secure context (good for PWA)' : 'non-secure context (PWA may not work)'}`);
+      
+      if (!('serviceWorker' in navigator)) {
+        console.error('Service Workers not supported in this browser - PWA features will not work');
+      }
+    }
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('beforeinstallprompt', () => {});
+      window.removeEventListener('appinstalled', () => {});
+    };
   }, []);
 
   const handleInstallClick = () => {
-    if (!deferredPrompt) return;
+    console.log('Install button clicked, deferred prompt:', deferredPrompt ? 'available' : 'not available');
+    
+    if (!deferredPrompt) {
+      console.log('No installation prompt available - this might happen if the app is already installed or does not meet installation criteria');
+      return;
+    }
 
     // Show the install prompt
     deferredPrompt.prompt();
+    console.log('Installation prompt displayed to user');
 
     // Wait for the user to respond to the prompt
     deferredPrompt.userChoice.then((choiceResult: { outcome: string }) => {
@@ -48,16 +78,32 @@ export default function PWAInstaller() {
     });
   };
 
-  if (!showInstallButton) return null;
+  // For debugging, let's also log PWA criteria when rendering
+  useEffect(() => {
+    console.log('PWA install button visible:', showInstallButton);
+  }, [showInstallButton]);
 
+  // Always render a container but only show the button when appropriate
   return (
     <div className="fixed bottom-4 right-4 z-50">
-      <button
-        onClick={handleInstallClick}
-        className="flex items-center space-x-2 bg-sky-600 hover:bg-sky-700 text-white font-medium py-2 px-4 rounded-lg shadow-lg transition-colors"
-      >
-        <span className="text-sm">Instalar App</span>
-      </button>
+      {showInstallButton ? (
+        <button
+          onClick={handleInstallClick}
+          className="flex items-center space-x-2 bg-sky-600 hover:bg-sky-700 text-white font-medium py-2 px-4 rounded-lg shadow-lg transition-colors"
+        >
+          <span className="text-sm">Instalar App</span>
+        </button>
+      ) : (
+        // Debug button - only visible in development
+        process.env.NODE_ENV === 'development' && (
+          <button
+            onClick={() => console.log('PWA install prompt not available yet')}
+            className="flex items-center space-x-2 bg-gray-400 text-white font-medium py-2 px-4 rounded-lg shadow-lg opacity-50"
+          >
+            <span className="text-xs">PWA Debug</span>
+          </button>
+        )
+      )}
     </div>
   );
 }

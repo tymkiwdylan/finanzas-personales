@@ -22,9 +22,18 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: "default",
     title: "Mi Presupuesto",
+    startupImage: [
+      '/icons-png/icon-512x512.png',
+    ],
   },
   applicationName: "Mi Presupuesto Personal",
+  formatDetection: {
+    telephone: false,
+  },
   manifest: "/manifest.json",
+  other: {
+    "mobile-web-app-capable": "yes",
+  },
 };
 
 export const viewport = {
