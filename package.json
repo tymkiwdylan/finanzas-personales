@@ -1,5 +1,6 @@
 {
   "name": "finanzas-personales",
+  "packageManager": "pnpm@10.5.2",
   "version": "0.1.0",
   "private": true,
   "scripts": {
