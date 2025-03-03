@@ -17,8 +17,8 @@ export interface Database {
           date: string
           currency: string
           category: string
-          recurring: boolean
-          recurring_interval?: string | null
+          is_recurring: boolean
+          recurring_frequency?: string | null
           created_at: string
           updated_at: string
           user_id: string
@@ -30,8 +30,8 @@ export interface Database {
           date: string
           currency: string
           category: string
-          recurring: boolean
-          recurring_interval?: string | null
+          is_recurring: boolean
+          recurring_frequency?: string | null
           created_at?: string
           updated_at?: string
           user_id: string
@@ -59,8 +59,8 @@ export interface Database {
           date: string
           currency: string
           category: string
-          recurring: boolean
-          recurring_interval?: string | null
+          is_recurring: boolean
+          recurring_frequency?: string | null
           created_at: string
           updated_at: string
           user_id: string
@@ -72,8 +72,8 @@ export interface Database {
           date: string
           currency: string
           category: string
-          recurring: boolean
-          recurring_interval?: string | null
+          is_recurring: boolean
+          recurring_frequency?: string | null
           created_at?: string
           updated_at?: string
           user_id: string

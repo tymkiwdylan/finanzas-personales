@@ -421,8 +421,8 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
       date: formatDateForDb(expense.date),
       currency: expense.currency,
       category: expense.category,
-      recurring: expense.isRecurring || false,
-      recurring_interval: expense.isRecurring ? expense.recurringFrequency : null
+      is_recurring: expense.isRecurring || false,
+      recurring_frequency: expense.isRecurring ? expense.recurringFrequency : null
     };
     console.log('Prepared expense for DB:', prepared);
     return prepared;
@@ -456,8 +456,8 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
       date: formatDateForDb(dateValue),
       currency: income.currency,
       category: income.category,
-      recurring: income.isRecurring || false,
-      recurring_interval: income.isRecurring ? income.recurringFrequency : null
+      is_recurring: income.isRecurring || false,
+      recurring_frequency: income.isRecurring ? income.recurringFrequency : null
     };
     console.log('Prepared income for DB:', prepared);
     return prepared;
