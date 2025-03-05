@@ -38,7 +38,7 @@ export function Header() {
   return (
     <header className="bg-sky-700 text-white py-4 px-4 sm:px-6">
       <div className="container mx-auto flex justify-between items-center">
-        <Link href="/" className="text-xl font-bold">Mi Presupuesto</Link>
+        <Link href="/" className="text-xl font-bold">ControlCash</Link>
         
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-6">

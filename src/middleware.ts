@@ -16,7 +16,8 @@ export async function middleware(req: NextRequest) {
     '/auth/register', 
     '/auth/reset-password', 
     '/auth/update-password',
-    '/auth/callback'
+    '/auth/callback',
+    '/landing'
   ];
   
   const isPublicPath = publicPaths.some(path => 
