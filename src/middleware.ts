@@ -12,12 +12,12 @@ export async function middleware(req: NextRequest) {
   
   // Paths that don't require authentication
   const publicPaths = [
+    '/', // Root path (landing page) should be accessible without authentication
     '/auth/login', 
     '/auth/register', 
     '/auth/reset-password', 
     '/auth/update-password',
     '/auth/callback',
-    '/landing'
   ];
   
   const isPublicPath = publicPaths.some(path => 
@@ -49,10 +49,16 @@ export async function middleware(req: NextRequest) {
   }
   
   if (session && isPublicPath) {
-    // Redirect to dashboard if accessing auth page with active session
-    const redirectUrl = req.nextUrl.clone();
-    redirectUrl.pathname = '/';
-    return NextResponse.redirect(redirectUrl);
+    // Only redirect from auth pages if the user is already logged in
+    // Don't redirect from the landing page (/) or other public non-auth pages
+    const isAuthPath = req.nextUrl.pathname.startsWith('/auth/');
+    
+    if (isAuthPath) {
+      // Redirect to dashboard if accessing auth page with active session
+      const redirectUrl = req.nextUrl.clone();
+      redirectUrl.pathname = '/';
+      return NextResponse.redirect(redirectUrl);
+    }
   }
   
   return res;

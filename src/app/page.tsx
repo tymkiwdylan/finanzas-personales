@@ -1,10 +1,14 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ArrowRight, PiggyBank, ChartBar, Settings, CreditCard } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
+
 export default function LandingPage() {
+  const { user, isLoading } = useAuth();
+  const router = useRouter();
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-50 to-white">
       {/* Header/Navigation */}
@@ -17,20 +21,38 @@ export default function LandingPage() {
             <a href="#features" className="text-gray-700 hover:text-sky-600">Características</a>
             <a href="#benefits" className="text-gray-700 hover:text-sky-600">Beneficios</a>
             <a href="#faq" className="text-gray-700 hover:text-sky-600">FAQ</a>
+            {user ? (
+              <Link 
+                href="/dashboard"
+                className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-md transition-colors"
+              >
+                Ir al Dashboard
+              </Link>
+            ) : (
+              <Link 
+                href="/auth/login"
+                className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-md transition-colors"
+              >
+                Iniciar sesión
+              </Link>
+            )}
+          </nav>
+          {/* Mobile login/dashboard button */}
+          {user ? (
+            <Link 
+              href="/dashboard"
+              className="md:hidden px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-md transition-colors"
+            >
+              Dashboard
+            </Link>
+          ) : (
             <Link 
               href="/auth/login"
-              className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-md transition-colors"
+              className="md:hidden px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-md transition-colors"
             >
-              Iniciar sesión
+              Acceder
             </Link>
-          </nav>
-          {/* Mobile login button */}
-          <Link 
-            href="/auth/login"
-            className="md:hidden px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-md transition-colors"
-          >
-            Acceder
-          </Link>
+          )}
         </div>
       </header>
 
@@ -47,18 +69,29 @@ export default function LandingPage() {
                 Simple, intuitivo y potente.
               </p>
               <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-                <Link
-                  href="/auth/register"
-                  className="px-6 py-3 bg-sky-600 hover:bg-sky-700 text-white text-center rounded-md shadow-lg hover:shadow-xl transition-all flex items-center justify-center"
-                >
-                  Comenzar gratis <ArrowRight className="ml-2 h-5 w-5" />
-                </Link>
-                <Link
-                  href="/auth/login"
-                  className="px-6 py-3 bg-white hover:bg-gray-100 text-sky-600 text-center border border-sky-200 rounded-md transition-colors"
-                >
-                  Iniciar sesión
-                </Link>
+                {user ? (
+                  <Link
+                    href="/dashboard"
+                    className="px-6 py-3 bg-sky-600 hover:bg-sky-700 text-white text-center rounded-md shadow-lg hover:shadow-xl transition-all flex items-center justify-center"
+                  >
+                    Ir al Dashboard <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
+                ) : (
+                  <>
+                    <Link
+                      href="/auth/register"
+                      className="px-6 py-3 bg-sky-600 hover:bg-sky-700 text-white text-center rounded-md shadow-lg hover:shadow-xl transition-all flex items-center justify-center"
+                    >
+                      Comenzar gratis <ArrowRight className="ml-2 h-5 w-5" />
+                    </Link>
+                    <Link
+                      href="/auth/login"
+                      className="px-6 py-3 bg-white hover:bg-gray-100 text-sky-600 text-center border border-sky-200 rounded-md transition-colors"
+                    >
+                      Iniciar sesión
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
             <div className="md:w-1/2">
@@ -162,12 +195,21 @@ export default function LandingPage() {
                 </ul>
                 
                 <div className="space-y-4">
-                  <Link 
-                    href="/auth/register" 
-                    className="block w-full py-3 px-6 bg-sky-600 hover:bg-sky-700 text-white font-medium rounded-md text-center shadow-sm transition-colors"
-                  >
-                    Comenzar ahora
-                  </Link>
+                  {user ? (
+                    <Link 
+                      href="/dashboard" 
+                      className="block w-full py-3 px-6 bg-sky-600 hover:bg-sky-700 text-white font-medium rounded-md text-center shadow-sm transition-colors"
+                    >
+                      Ir al Dashboard
+                    </Link>
+                  ) : (
+                    <Link 
+                      href="/auth/register" 
+                      className="block w-full py-3 px-6 bg-sky-600 hover:bg-sky-700 text-white font-medium rounded-md text-center shadow-sm transition-colors"
+                    >
+                      Comenzar ahora
+                    </Link>
+                  )}
                   <p className="text-sm text-gray-500 text-center">Sin costos ocultos. Totalmente gratuito.</p>
                 </div>
               </div>
@@ -209,12 +251,21 @@ export default function LandingPage() {
           <p className="text-lg opacity-90 mb-8 max-w-2xl mx-auto">
             Únete a miles de personas que ya han tomado control de su futuro financiero con ControlCash.
           </p>
-          <Link
-            href="/auth/register"
-            className="px-8 py-3 bg-white text-sky-600 font-medium rounded-md shadow-lg hover:shadow-xl transition-all inline-flex items-center"
-          >
-            Crear cuenta gratis <ArrowRight className="ml-2 h-5 w-5" />
-          </Link>
+          {user ? (
+            <Link
+              href="/dashboard"
+              className="px-8 py-3 bg-white text-sky-600 font-medium rounded-md shadow-lg hover:shadow-xl transition-all inline-flex items-center"
+            >
+              Ir al Dashboard <ArrowRight className="ml-2 h-5 w-5" />
+            </Link>
+          ) : (
+            <Link
+              href="/auth/register"
+              className="px-8 py-3 bg-white text-sky-600 font-medium rounded-md shadow-lg hover:shadow-xl transition-all inline-flex items-center"
+            >
+              Crear cuenta gratis <ArrowRight className="ml-2 h-5 w-5" />
+            </Link>
+          )}
         </div>
       </section>
 

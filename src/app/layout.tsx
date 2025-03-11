@@ -43,8 +43,6 @@ export const viewport = {
   themeColor: "#0284c7",
 };
 
-
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -55,6 +53,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        {/* AuthProvider wrapper is still needed for the entire app, but no auth check here */}
         <AuthProvider>
           <BudgetProvider>
             {children}
