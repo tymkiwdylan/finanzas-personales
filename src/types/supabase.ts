@@ -1,137 +1,146 @@
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[]
-
+// types/database.ts
 export interface Database {
   public: {
     Tables: {
       expenses: {
         Row: {
-          id: string
-          description: string
-          amount: number
-          date: string
-          currency: string
-          category: string
-          is_recurring: boolean
-          recurring_frequency?: string | null
-          created_at: string
-          updated_at: string
-          user_id: string
-        }
+          id: string;
+          user_id: string;
+          amount: number;
+          description: string | null;
+          created_at: string;
+        };
         Insert: {
-          id?: string
-          description: string
-          amount: number
-          date: string
-          currency: string
-          category: string
-          is_recurring: boolean
-          recurring_frequency?: string | null
-          created_at?: string
-          updated_at?: string
-          user_id: string
-        }
+          id?: string;
+          user_id: string;
+          amount: number;
+          description?: string | null;
+          created_at?: string;
+        };
         Update: {
-          id?: string
-          description?: string
-          amount?: number
-          date?: string
-          currency?: string
-          category?: string
-          recurring?: boolean
-          recurring_interval?: string | null
-          created_at?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
+          id?: string;
+          user_id?: string;
+          amount?: number;
+          description?: string | null;
+          created_at?: string;
+        };
+      };
       incomes: {
         Row: {
-          id: string
-          description: string
-          amount: number
-          date: string
-          currency: string
-          category: string
-          is_recurring: boolean
-          recurring_frequency?: string | null
-          created_at: string
-          updated_at: string
-          user_id: string
-        }
+          id: string;
+          user_id: string;
+          amount: number;
+          description: string | null;
+          created_at: string;
+        };
         Insert: {
-          id?: string
-          description: string
-          amount: number
-          date: string
-          currency: string
-          category: string
-          is_recurring: boolean
-          recurring_frequency?: string | null
-          created_at?: string
-          updated_at?: string
-          user_id: string
-        }
+          id?: string;
+          user_id: string;
+          amount: number;
+          description?: string | null;
+          created_at?: string;
+        };
         Update: {
-          id?: string
-          description?: string
-          amount?: number
-          date?: string
-          currency?: string
-          category?: string
-          recurring?: boolean
-          recurring_interval?: string | null
-          created_at?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
+          id?: string;
+          user_id?: string;
+          amount?: number;
+          description?: string | null;
+          created_at?: string;
+        };
+      };
       user_settings: {
         Row: {
-          id: string
-          default_currency: string
-          exchange_rate: number
-          created_at: string
-          updated_at: string
-          user_id: string
-        }
+          id: string;
+          user_id: string;
+          settings: JSON | null;
+          created_at: string;
+        };
         Insert: {
-          id?: string
-          default_currency: string
-          exchange_rate: number
-          created_at?: string
-          updated_at?: string
-          user_id: string
-        }
+          id?: string;
+          user_id: string;
+          settings?: JSON | null;
+          created_at?: string;
+        };
         Update: {
-          id?: string
-          default_currency?: string
-          exchange_rate?: number
-          created_at?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      [_ in never]: never
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
+          id?: string;
+          user_id?: string;
+          settings?: JSON | null;
+          created_at?: string;
+        };
+      };
+      prices: {
+        Row: {
+          id: string;
+          active: boolean;
+          currency: string;
+          description: string | null;
+          interval: 'day' | 'week' | 'month' | 'year' | null;
+          interval_count: number | null;
+          metadata: JSON | null;
+          product_id: string;
+          trial_period_days: number | null;
+          type: 'one_time' | 'recurring';
+          unit_amount: number | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          active?: boolean;
+          currency?: string;
+          description?: string | null;
+          interval?: 'day' | 'week' | 'month' | 'year' | null;
+          interval_count?: number | null;
+          metadata?: JSON | null;
+          product_id: string;
+          trial_period_days?: number | null;
+          type: 'one_time' | 'recurring';
+          unit_amount?: number | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          active?: boolean;
+          currency?: string;
+          description?: string | null;
+          interval?: 'day' | 'week' | 'month' | 'year' | null;
+          interval_count?: number | null;
+          metadata?: JSON | null;
+          product_id?: string;
+          trial_period_days?: number | null;
+          type?: 'one_time' | 'recurring';
+          unit_amount?: number | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      stripe_customers: {
+        Row: {
+          id: string;
+          user_id: string;
+          stripe_customer_id: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          stripe_customer_id: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          stripe_customer_id?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+    };
+    Views: {};
+    Functions: {};
+    Enums: {};
+  };
 }

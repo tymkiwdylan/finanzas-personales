@@ -9,6 +9,13 @@ export async function middleware(req: NextRequest) {
   const {
     data: { session },
   } = await supabase.auth.getSession();
+
+  const { data: subscription } = await supabase
+  .from('users')
+  .select('subscription_status')
+  .eq('id', session?.user?.id)
+  .single()
+
   
   // Paths that don't require authentication
   const publicPaths = [
@@ -18,11 +25,19 @@ export async function middleware(req: NextRequest) {
     '/auth/reset-password', 
     '/auth/update-password',
     '/auth/callback',
+    '/pricing',
   ];
   
   const isPublicPath = publicPaths.some(path => 
-    req.nextUrl.pathname.startsWith(path)
+    req.nextUrl.pathname === path || 
+    req.nextUrl.pathname.startsWith(`${path}/`)
   );
+
+  console.log(isPublicPath)
+
+  if (subscription?.subscription_status !== 'active' && !isPublicPath) {
+    return NextResponse.redirect(new URL('/pricing', req.url))
+  }
   
   // Special case for auth callback route
   if (req.nextUrl.pathname === '/auth/callback') {
