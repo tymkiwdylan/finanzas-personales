@@ -3,7 +3,20 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export async function middleware(req: NextRequest) {
+
+
   const res = NextResponse.next();
+
+  const pathname = req.nextUrl.pathname;
+  if (
+    pathname.includes('/sw') ||
+    pathname.includes('/workbox') ||
+    pathname.includes('/manifest') ||
+    pathname.includes('/offline')
+  ) {
+    return res; // Serve the file directly without further processing
+  }
+  
   const supabase = createMiddlewareClient({ req, res });
   
   const {
