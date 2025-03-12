@@ -59,9 +59,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(user)
         // Get subscription status
         const { data: subscription } = await supabase
-          .from('users')
+          .from('subscriptions')
           .select('subscription_status')
-          .eq('id', user.id)
+          .eq('user_id', user.id)
           .single()
         setSubscriptionStatus(subscription?.subscription_status)
       }
@@ -82,6 +82,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     session,
     isLoading,
     signOut,
+    subscriptionStatus
   };
 
   return (

@@ -138,6 +138,41 @@ export interface Database {
           updated_at?: string;
         };
       };
+      subscriptions: {
+        Row: {
+          id: string;
+          user_id: string;
+          stripe_customer_id: string;
+          stripe_subscription_id: string;
+          subscription_status: string;
+          subscription_tier: string;
+          subscription_period_end: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          stripe_customer_id: string;
+          stripe_subscription_id: string;
+          subscription_status: string;
+          subscription_tier: string;
+          subscription_period_end: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          stripe_customer_id?: string;
+          stripe_subscription_id?: string;
+          subscription_status?: string;
+          subscription_tier?: string;
+          subscription_period_end?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
     };
     Views: {};
     Functions: {};

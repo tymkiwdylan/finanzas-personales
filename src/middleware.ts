@@ -11,9 +11,9 @@ export async function middleware(req: NextRequest) {
   } = await supabase.auth.getSession();
 
   const { data: subscription } = await supabase
-  .from('users')
+  .from('subscriptions')
   .select('subscription_status')
-  .eq('id', session?.user?.id)
+  .eq('user_id', session?.user?.id)
   .single()
 
   
@@ -26,6 +26,7 @@ export async function middleware(req: NextRequest) {
     '/auth/update-password',
     '/auth/callback',
     '/pricing',
+    '/api/checkout'
   ];
   
   const isPublicPath = publicPaths.some(path => 
