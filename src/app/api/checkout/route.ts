@@ -3,7 +3,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/utils/stripe/config';
 
 const PRICE_IDS = {
-  "monthly": 'price_1R1Y9KJE3OWBK5PL3aj8QI4l',
+  "monthly": 'price_1QycLQJE3OWBK5PL6VmBe6Lm', // Legacy ID format
+  "price_monthly": 'price_1QycLQJE3OWBK5PL6VmBe6Lm',
+  "price_annual": 'price_1QycM0JE3OWBK5PLslLu6zhM',
+  "price_lifetime": 'price_1QycMJJE3OWBK5PL2cuCwqMe'
 } as const;
 
 type PlanId = keyof typeof PRICE_IDS;
