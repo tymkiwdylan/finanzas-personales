@@ -39,7 +39,8 @@ export async function middleware(req: NextRequest) {
     '/auth/update-password',
     '/auth/callback',
     '/pricing',
-    '/api/checkout'
+    '/api/checkout',
+    '/api/stripe-webhook'
   ];
   
   const isPublicPath = publicPaths.some(path => 
