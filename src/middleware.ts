@@ -29,6 +29,7 @@ export async function middleware(req: NextRequest) {
   .eq('user_id', session?.user?.id)
   .single()
 
+
   
   // Paths that don't require authentication
   const publicPaths = [
@@ -53,9 +54,9 @@ export async function middleware(req: NextRequest) {
     req.nextUrl.pathname.startsWith(`${path}/`)
   );
 
-  console.log(isPublicPath)
+  
 
-  if (subscription?.subscription_status !== 'active' && !isPublicPath) {
+  if ((subscription?.subscription_status !== 'active' && subscription?.subscription_status !== 'trialing') && !isPublicPath) {
     return NextResponse.redirect(new URL('/pricing', req.url))
   }
   

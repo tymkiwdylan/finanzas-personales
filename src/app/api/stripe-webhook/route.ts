@@ -3,6 +3,7 @@ import { stripe } from '@/utils/stripe/config';
 import { supabase } from '@/utils/supabase-server';
 
 // Map price IDs to subscription tiers for easier reference
+// Updated to match the IDs in checkout/route.ts
 const PRICE_TO_TIER_MAP: Record<string, string> = {
   'price_1QycLQJE3OWBK5PL6VmBe6Lm': 'monthly',
   'price_1QycM0JE3OWBK5PLslLu6zhM': 'annual',
@@ -25,7 +26,7 @@ const relevantEvents = new Set([
 export async function POST(req: Request) {
   const body = await req.text();
   const sig = req.headers.get('stripe-signature') as string;
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  const webhookSecret = "whsec_1e3a7483057dd0b1d98097d997773669fd9f5e29674ff25da511de43a2fb2465";
   let event: Stripe.Event;
 
   try {
@@ -58,19 +59,70 @@ export async function POST(req: Request) {
             periodEnd = tenYearsFromNow;
           }
           
-          await supabase
+          console.log('Upserting subscription:', {
+            id: subscription.id,
+            user_id: subscription.metadata?.userId || '',
+            stripe_customer_id: subscription.customer as string,
+            tier: tier,
+            priceId: priceId
+          });
+          
+          if (!subscription.metadata?.userId) {
+            console.error('No userId found in subscription metadata. This will likely cause the upsert to fail.');
+          }
+          
+          // First try to find an existing subscription by stripe_customer_id since it has a unique constraint
+          const { data: existingData, error: findError } = await supabase
             .from('subscriptions')
-            .upsert({
-              id: subscription.id,
-              user_id: subscription.metadata?.userId || '', // Use userId from the metadata
-              stripe_customer_id: subscription.customer as string,
-              stripe_subscription_id: subscription.id,
-              subscription_status: subscription.status,
-              subscription_tier: tier,
-              subscription_period_end: periodEnd.toISOString(),
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            });
+            .select('id, user_id')
+            .eq('stripe_customer_id', subscription.customer as string)
+            .maybeSingle();
+            
+          if (findError) {
+            console.error('Error finding existing subscription:', findError);
+          } else {
+            console.log('Existing subscription check result:', existingData || 'No existing subscription found');
+          }
+            
+          let result;
+          
+          if (existingData?.id) {
+            console.log(`Updating existing subscription with ID: ${existingData.id}`);
+            // If exists, update the existing record
+            result = await supabase
+              .from('subscriptions')
+              .update({
+                user_id: subscription.metadata?.userId || existingData.user_id, // Keep existing user_id if no new one provided
+                stripe_subscription_id: subscription.id,
+                subscription_status: subscription.status,
+                subscription_tier: tier,
+                subscription_period_end: periodEnd.toISOString(),
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', existingData.id);
+          } else {
+            console.log('Creating new subscription record');
+            // Otherwise insert a new record
+            result = await supabase
+              .from('subscriptions')
+              .insert({
+                user_id: subscription.metadata?.userId || '', // Use userId from the metadata
+                stripe_customer_id: subscription.customer as string,
+                stripe_subscription_id: subscription.id,
+                subscription_status: subscription.status,
+                subscription_tier: tier,
+                subscription_period_end: periodEnd.toISOString(),
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              });
+          }
+            
+          if (result.error) {
+            console.error('Supabase operation error:', result.error);
+            throw result.error; // Re-throw so it gets caught by the outer try/catch
+          } else {
+            console.log('Subscription operation successful:', result.data);
+          }
           break;
         case 'checkout.session.completed':
           const checkoutSession = event.data.object as Stripe.Checkout.Session;
@@ -92,19 +144,69 @@ export async function POST(req: Request) {
             }
             
             // Update the user's subscription in the database
-            await supabase
+            console.log('Upserting from checkout.session.completed:', {
+              id: subscriptionId,
+              userId: checkoutSession.metadata?.userId,
+              tier: tier,
+              priceId: priceId
+            });
+            
+            if (!checkoutSession.metadata?.userId) {
+              console.error('No userId found in checkout session metadata. This will likely cause the upsert to fail.');
+            }
+            
+            // First try to find an existing subscription by stripe_customer_id since it has a unique constraint
+            const { data: existingData, error: findError } = await supabase
               .from('subscriptions')
-              .upsert({
-                id: subscriptionId,
-                user_id: checkoutSession.metadata?.userId || '', // Use userId from the metadata
-                stripe_customer_id: checkoutSession.customer as string,
-                stripe_subscription_id: subscriptionId,
-                subscription_status: 'active',
-                subscription_tier: tier,
-                subscription_period_end: periodEnd.toISOString(),
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
-              });
+              .select('id, user_id')
+              .eq('stripe_customer_id', checkoutSession.customer as string)
+              .maybeSingle();
+              
+            if (findError) {
+              console.error('Error finding existing subscription:', findError);
+            } else {
+              console.log('Existing subscription check result:', existingData || 'No existing subscription found');
+            }
+              
+            let result;
+            
+            if (existingData?.id) {
+              console.log(`Updating existing subscription with ID: ${existingData.id}`);
+              // If exists, update the existing record
+              result = await supabase
+                .from('subscriptions')
+                .update({
+                  user_id: checkoutSession.metadata?.userId || existingData.user_id, // Keep existing user_id if no new one provided
+                  stripe_subscription_id: subscriptionId,
+                  subscription_status: 'active',
+                  subscription_tier: tier,
+                  subscription_period_end: periodEnd.toISOString(),
+                  updated_at: new Date().toISOString()
+                })
+                .eq('id', existingData.id);
+            } else {
+              console.log('Creating new subscription record');
+              // Otherwise insert a new record
+              result = await supabase
+                .from('subscriptions')
+                .insert({
+                  user_id: checkoutSession.metadata?.userId || '', // Use userId from the metadata
+                  stripe_customer_id: checkoutSession.customer as string,
+                  stripe_subscription_id: subscriptionId,
+                  subscription_status: 'active',
+                  subscription_tier: tier,
+                  subscription_period_end: periodEnd.toISOString(),
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString()
+                });
+            }
+              
+            if (result.error) {
+              console.error('Supabase operation error:', result.error);
+              throw result.error; // Re-throw so it gets caught by the outer try/catch
+            } else {
+              console.log('Checkout subscription operation successful:', result.data);
+            }
           }
           break;
         default:
