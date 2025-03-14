@@ -3,12 +3,33 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export async function middleware(req: NextRequest) {
+
+
   const res = NextResponse.next();
+
+  const pathname = req.nextUrl.pathname;
+  if (
+    pathname.includes('/sw') ||
+    pathname.includes('/workbox') ||
+    pathname.includes('/manifest') ||
+    pathname.includes('/offline')
+  ) {
+    return res; // Serve the file directly without further processing
+  }
+  
   const supabase = createMiddlewareClient({ req, res });
   
   const {
     data: { session },
   } = await supabase.auth.getSession();
+
+  const { data: subscription } = await supabase
+  .from('subscriptions')
+  .select('subscription_status')
+  .eq('user_id', session?.user?.id)
+  .single()
+
+
   
   // Paths that don't require authentication
   const publicPaths = [
@@ -18,11 +39,26 @@ export async function middleware(req: NextRequest) {
     '/auth/reset-password', 
     '/auth/update-password',
     '/auth/callback',
+    '/pricing',
+    '/api/checkout',
+    '/api/stripe-webhook'
   ];
   
+  // Special handling for Stripe webhook to ensure it's always public
+  if (req.nextUrl.pathname.startsWith('/api/stripe-webhook')) {
+    return res;
+  }
+
   const isPublicPath = publicPaths.some(path => 
-    req.nextUrl.pathname.startsWith(path)
+    req.nextUrl.pathname === path || 
+    req.nextUrl.pathname.startsWith(`${path}/`)
   );
+
+  
+
+  if ((subscription?.subscription_status !== 'active' && subscription?.subscription_status !== 'trialing') && !isPublicPath) {
+    return NextResponse.redirect(new URL('/pricing', req.url))
+  }
   
   // Special case for auth callback route
   if (req.nextUrl.pathname === '/auth/callback') {
