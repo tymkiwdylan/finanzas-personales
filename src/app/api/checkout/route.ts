@@ -39,9 +39,21 @@ export async function POST(request: NextRequest) {
     const customer = data.customer as string | undefined; // Stripe customer ID
     const coupon = data.coupon as string | null;
 
+    let customerId = null;
+
+    if (customer){
+      try {
+        customerId = (await stripe.customers.retrieve(customer)).id;
+      } catch (error) {
+        customerId = null;
+      }
+    }
+
+
+
     const checkoutSession: Stripe.Checkout.Session =
       await stripe.checkout.sessions.create({
-        ...(customer && { customer }), // Only include if customer ID exists
+        ...(customerId && { customer: customerId }), // Only include if customer ID exists
         line_items: [
           {
             price: priceId,
