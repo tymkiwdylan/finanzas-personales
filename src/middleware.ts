@@ -43,6 +43,11 @@ export async function middleware(req: NextRequest) {
     '/api/stripe-webhook'
   ];
   
+  // Special handling for Stripe webhook to ensure it's always public
+  if (req.nextUrl.pathname.startsWith('/api/stripe-webhook')) {
+    return res;
+  }
+
   const isPublicPath = publicPaths.some(path => 
     req.nextUrl.pathname === path || 
     req.nextUrl.pathname.startsWith(`${path}/`)
