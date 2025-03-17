@@ -2,8 +2,8 @@ import { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Mi Presupuesto Personal',
-    short_name: 'Presupuesto',
+    name: 'BudgetCash',
+    short_name: 'BudgetCash',
     description: 'Aplicación para gestionar presupuestos personales mensuales',
     start_url: '/',
     display: 'standalone',
@@ -11,17 +11,17 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: '#0284c7',
     icons: [
       {
-        src: '/icon-192x192.png',
+        src: '/icons-png/icon-192x192.png',
         sizes: '192x192',
         type: 'image/png',
       },
       {
-        src: '/icons/icon-512x512.png',
+        src: '/icons-png/icon-512x512.png',
         sizes: '512x512',
         type: 'image/png',
       },
       {
-        src: '/icons/icon-512x512.png',
+        src: '/icons-png/maskable-512x512.png',
         sizes: '512x512',
         type: 'image/png',
         purpose: 'maskable',

@@ -61,7 +61,7 @@ export default function PWAInstaller() {
       // Provide instructions for manual installation
       alert('Para instalar esta aplicación:\n\n' + 
             '1. En Chrome: Haz clic en los tres puntos (⋮) en la esquina superior derecha\n' +
-            '2. Selecciona "Instalar Mi Presupuesto Personal"\n\n' +
+            '2. Selecciona "Instalar BudgetCash"\n\n' +
             'Si no ves esta opción, la aplicación podría no cumplir con todos los criterios de instalación.');
       return;
     }

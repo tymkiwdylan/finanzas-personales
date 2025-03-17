@@ -1,5 +1,5 @@
 {
-  "name": "finanzas-personales",
+  "name": "controlcash",
   "packageManager": "pnpm@10.5.2",
   "version": "0.1.0",
   "private": true,
@@ -14,9 +14,11 @@
     "@headlessui/react": "^2.2.0",
     "@heroicons/react": "^2.2.0",
     "@hookform/resolvers": "^4.1.2",
+    "@stripe/stripe-js": "^6.0.0",
     "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/supabase-js": "^2.49.1",
     "@types/uuid": "^10.0.0",
+    "axios": "^1.8.2",
     "chart.js": "^4.4.8",
     "lucide-react": "^0.477.0",
     "next": "15.2.0",
@@ -26,6 +28,7 @@
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.54.2",
     "react-icons": "^5.5.0",
+    "stripe": "^17.7.0",
     "uuid": "^11.1.0",
     "zod": "^3.24.2"
   },

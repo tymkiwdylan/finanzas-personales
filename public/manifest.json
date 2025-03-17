@@ -1,6 +1,6 @@
 {
-  "name": "Mi Presupuesto Personal",
-  "short_name": "Presupuesto",
+  "name": "BudgetCash",
+  "short_name": "BudgetCash",
   "description": "Aplicación para gestionar presupuestos personales mensuales",
   "id": "/",
   "start_url": "/",

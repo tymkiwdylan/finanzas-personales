@@ -16,17 +16,17 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Mi Presupuesto Personal",
+  title: "BudgetCash",
   description: "Aplicación para gestionar presupuestos personales mensuales",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Mi Presupuesto",
+    title: "BudgetCash",
     startupImage: [
       '/icons-png/icon-512x512.png',
     ],
   },
-  applicationName: "Mi Presupuesto Personal",
+  applicationName: "BudgetCash",
   formatDetection: {
     telephone: false,
   },
@@ -43,8 +43,6 @@ export const viewport = {
   themeColor: "#0284c7",
 };
 
-
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -55,6 +53,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        {/* AuthProvider wrapper is still needed for the entire app, but no auth check here */}
         <AuthProvider>
           <BudgetProvider>
             {children}

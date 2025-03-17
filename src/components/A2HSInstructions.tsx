@@ -22,7 +22,7 @@ export default function A2HSInstructions() {
           </p>
           <ol className="text-xs text-gray-700 space-y-1 list-decimal pl-4 mb-3">
             <li>Haz clic en los tres puntos (⋮) en la esquina superior derecha</li>
-            <li>Selecciona &ldquo;Instalar Mi Presupuesto Personal&rdquo;</li>
+            <li>Selecciona &ldquo;Instalar BudgetCash&rdquo;</li>
             <li>Sigue las instrucciones en pantalla</li>
           </ol>
           <p className="text-xs text-gray-500 mt-2">

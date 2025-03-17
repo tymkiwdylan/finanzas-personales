@@ -17,7 +17,7 @@ export function Layout({ children }: LayoutProps) {
           {children}
         </main>
         <footer className="bg-sky-800 text-white py-4 text-center text-sm">
-          <p>© {new Date().getFullYear()} Mi Presupuesto Personal</p>
+          <p>© {new Date().getFullYear()} ControlCash</p>
         </footer>
       </div>
     </BudgetProvider>

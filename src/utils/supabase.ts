@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { Database } from '@/types/supabase';
+import { stripe } from '@/utils/stripe/config';
 
 // URL and key should be in environment variables
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://cexksizwepoxodxkovpw.supabase.co';
@@ -318,4 +319,50 @@ export async function updateUserSettings(settings: any) {
     console.error('Error in updateUserSettings:', error);
     throw error;
   }
+}
+
+
+async function createOrRetrieveCustomer({ uuid, email }: { uuid: string; email: string }): Promise<string> {
+  // Check if a record exists in stripe_customers for the user
+  const { data, error } = await supabase
+    .from('stripe_customers')
+    .select('stripe_customer_id')
+    .eq('user_id', uuid)
+    .single();
+
+  if (error && error.code !== 'PGRST116') { // 'PGRST116' means no record found
+    console.error(error);
+    throw new Error('Error querying stripe_customers');
+  }
+
+  if (data) {
+    return data.stripe_customer_id;
+  }
+
+  // If no record, check Stripe for a customer with this email
+  const customers = await stripe.customers.list({ email, limit: 1 });
+  let customerId: string;
+
+  if (customers.data.length > 0) {
+    customerId = customers.data[0].id;
+  } else {
+    // Create a new Stripe customer
+    const customer = await stripe.customers.create({
+      email,
+      metadata: { supabase_user_id: uuid },
+    });
+    customerId = customer.id;
+  }
+
+  // Store the association in stripe_customers
+  const { error: insertError } = await supabase
+    .from('stripe_customers')
+    .insert({ user_id: uuid, stripe_customer_id: customerId });
+
+  if (insertError) {
+    console.error(insertError);
+    throw new Error('Error inserting into stripe_customers');
+  }
+
+  return customerId;
 }

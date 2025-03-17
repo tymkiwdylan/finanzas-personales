@@ -23,9 +23,9 @@ export default function ClientPWAWrapper() {
   return (
     <>
       <PwaHead />
-      {/* <PwaInstallGuide />
+      <PwaInstallGuide />
       <PWAInstaller />
-      <A2HSInstructions /> */}
+      <A2HSInstructions />
     </>
   );
 }
