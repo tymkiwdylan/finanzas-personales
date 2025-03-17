@@ -8,11 +8,17 @@ export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
 
   const pathname = req.nextUrl.pathname;
+  // Allow all PWA-related static assets to bypass the middleware
   if (
-    pathname.includes('/sw') ||
+    pathname.includes('/sw.js') ||
     pathname.includes('/workbox') ||
     pathname.includes('/manifest') ||
-    pathname.includes('/offline')
+    pathname.includes('/icons-png') ||
+    pathname.includes('/offline') ||
+    pathname.endsWith('.json') ||
+    pathname.endsWith('.png') ||
+    pathname.endsWith('.ico') ||
+    pathname.endsWith('.svg')
   ) {
     return res; // Serve the file directly without further processing
   }
@@ -107,8 +113,9 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * - public folder
+     * - PWA assets (manifest.json, sw.js, workbox files)
+     * - Icon files
      */
-    '/((?!_next/static|_next/image|favicon.ico|public|icons).*)',
+    '/((?!_next/static|_next/image|favicon.ico|manifest.json|sw.js|workbox-|icons-png|offline).*)',
   ],
 };

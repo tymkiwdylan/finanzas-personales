@@ -1,14 +1,30 @@
-const CACHE_NAME = 'mi-presupuesto-cache-v2'; // Increment this version when making changes
+const CACHE_NAME = 'budgetcash-cache-v1'; // Increment this version when making changes
 const urlsToCache = [
   '/',
   '/offline',
+  '/dashboard',
+  '/auth/login',
+  '/auth/register',
+  '/pricing',
+  '/icons-png/icon-96x96.png',
+  '/icons-png/icon-128x128.png',
+  '/icons-png/icon-144x144.png',
+  '/icons-png/icon-152x152.png',
+  '/icons-png/icon-167x167.png',
+  '/icons-png/icon-180x180.png',
   '/icons-png/icon-192x192.png',
+  '/icons-png/icon-384x384.png',
   '/icons-png/icon-512x512.png',
+  '/icons-png/maskable-192x192.png',
+  '/icons-png/maskable-512x512.png',
   '/favicon.ico',
   '/manifest.json',
   // Add static assets that should be available offline
   '/next.svg',
-  '/vercel.svg'
+  '/vercel.svg',
+  '/file.svg',
+  '/globe.svg',
+  '/window.svg'
 ];
 
 // Instalación del Service Worker
