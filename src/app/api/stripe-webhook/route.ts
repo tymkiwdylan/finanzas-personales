@@ -51,7 +51,7 @@ export async function POST(req: Request) {
           const tier = priceId ? (PRICE_TO_TIER_MAP[priceId] || 'default') : 'default';
           
           // Set period end based on subscription data
-          let periodEnd = new Date(subscription.current_period_end * 1000);
+          const periodEnd = new Date(subscription.current_period_end * 1000);
           
           console.log('Upserting subscription:', {
             id: subscription.id,
@@ -130,7 +130,7 @@ export async function POST(req: Request) {
             const tier = priceId ? (PRICE_TO_TIER_MAP[priceId] || 'default') : 'default';
             
             // Set period end based on subscription data
-            let periodEnd = new Date(subscription.current_period_end * 1000);
+            const periodEnd = new Date(subscription.current_period_end * 1000);
             
             // Update the user's subscription in the database
             console.log('Upserting from checkout.session.completed:', {
