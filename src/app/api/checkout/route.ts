@@ -11,7 +11,7 @@ const PRICE_IDS = {
 type PlanId = keyof typeof PRICE_IDS;
 
 export async function POST(request: NextRequest) {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://www.budgetcash.tech';
   
   try {
     const data = await request.json();
