@@ -16,17 +16,17 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ControlCash",
+  title: "BudgetCash",
   description: "Aplicación para gestionar presupuestos personales mensuales",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "ControlCash",
+    title: "BudgetCash",
     startupImage: [
       '/icons-png/icon-512x512.png',
     ],
   },
-  applicationName: "ControlCash",
+  applicationName: "BudgetCash",
   formatDetection: {
     telephone: false,
   },

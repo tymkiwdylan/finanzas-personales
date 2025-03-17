@@ -140,12 +140,12 @@ export default function PricingPage() {
             Precios Simples y Transparentes
           </h1>
           <p className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto">
-            Elige el plan que mejor se adapte a tu viaje financiero
+            Elige el plan que mejor se adapte a tu viaje financiero con BudgetCash
           </p>
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
           {/* Monthly Plan */}
           <div className="bg-white rounded-2xl shadow-lg overflow-hidden transform transition-all hover:scale-105 border border-gray-100 flex flex-col">
             <div className="px-6 py-8 flex-grow">
@@ -193,25 +193,7 @@ export default function PricingPage() {
             </div>
           </div>
 
-          {/* Lifetime Plan */}
-          <div className="bg-white rounded-2xl shadow-lg overflow-hidden transform transition-all hover:scale-105 border border-gray-100 flex flex-col">
-            <div className="px-6 py-8 flex-grow">
-              <div className="text-center">
-                <h2 className="text-2xl font-semibold text-gray-900">De por Vida</h2>
-                <div className="mt-4">
-                  <span className="text-4xl font-bold text-gray-900">$199.99</span>
-                </div>
-                <p className="mt-2 text-gray-600">Pago único</p>
-              </div>
 
-              {renderPlanFeatures()}
-            </div>
-
-            {/* Button */}
-            <div className="px-6 pb-8">
-              {renderSubscribeButton('price_lifetime', 'Comprar Acceso de por Vida')}
-            </div>
-          </div>
         </div>
 
         {/* Error Message */}

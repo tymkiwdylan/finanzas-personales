@@ -15,7 +15,7 @@ export default function LandingPage() {
       <header className="bg-white/80 backdrop-blur-sm sticky top-0 z-10 border-b border-sky-100">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center">
-            <span className="text-2xl font-bold text-sky-700">ControlCash</span>
+            <span className="text-2xl font-bold text-sky-700">BudgetCash</span>
           </div>
           <nav className="hidden md:flex items-center space-x-8">
             <a href="#features" className="text-gray-700 hover:text-sky-600">Características</a>
@@ -65,7 +65,7 @@ export default function LandingPage() {
                 Maneja tus finanzas con <span className="text-sky-600">control total</span>
               </h1>
               <p className="text-lg text-gray-600 mb-8">
-                ControlCash te ayuda a rastrear tus gastos, gestionar tus ingresos y alcanzar tus metas financieras.
+                BudgetCash te ayuda a rastrear tus gastos, gestionar tus ingresos y alcanzar tus metas financieras.
                 Simple, intuitivo y potente.
               </p>
               <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
@@ -79,10 +79,10 @@ export default function LandingPage() {
                 ) : (
                   <>
                     <Link
-                      href="/auth/register"
+                      href="/pricing"
                       className="px-6 py-3 bg-sky-600 hover:bg-sky-700 text-white text-center rounded-md shadow-lg hover:shadow-xl transition-all flex items-center justify-center"
                     >
-                      Comenzar gratis <ArrowRight className="ml-2 h-5 w-5" />
+                      Ver planes <ArrowRight className="ml-2 h-5 w-5" />
                     </Link>
                     <Link
                       href="/auth/login"
@@ -98,11 +98,11 @@ export default function LandingPage() {
               <div className="rounded-lg bg-white shadow-xl p-2 border border-gray-200">
                 <img
                   src="/dashboard-preview.jpg"
-                  alt="Dashboard de ControlCash"
+                  alt="Dashboard de BudgetCash"
                   className="rounded-md w-full"
                   onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                     // Fallback in case the image doesn't exist yet
-                    e.currentTarget.src = "https://placehold.co/600x400/EDF6FE/0284c7?text=ControlCash+Dashboard";
+                    e.currentTarget.src = "https://placehold.co/600x400/EDF6FE/0284c7?text=BudgetCash+Dashboard";
                   }}
                 />
               </div>
@@ -144,7 +144,7 @@ export default function LandingPage() {
       {/* Benefits Section */}
       <section id="benefits" className="py-16">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">¿Por qué elegir ControlCash?</h2>
+          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">¿Por qué elegir BudgetCash?</h2>
           
           <div className="grid md:grid-cols-3 gap-8">
             <BenefitCard 
@@ -170,18 +170,19 @@ export default function LandingPage() {
       <section id="pricing" className="py-16 bg-white">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center text-gray-900 mb-4">Comienza a controlar tus finanzas</h2>
-          <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">Accede a todas las herramientas que necesitas para administrar tu dinero de forma eficiente.</p>
+          <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">Accede a todas las herramientas que necesitas para administrar tu dinero de forma eficiente. <span className="font-semibold text-sky-700">Requiere suscripción.</span></p>
           
           <div className="max-w-4xl mx-auto">
             <div className="bg-white rounded-xl shadow-xl overflow-hidden border border-sky-100 transform transition-transform hover:scale-105">
               <div className="bg-sky-600 py-6 px-8 text-white">
-                <h3 className="text-xl font-bold">ControlCash</h3>
+                <h3 className="text-xl font-bold">BudgetCash</h3>
                 <p className="opacity-90">Gestión financiera personal</p>
               </div>
               
               <div className="p-8">
                 <div className="flex items-baseline mb-6">
-                  <span className="text-4xl font-bold">Gratis</span>
+                  <span className="text-4xl font-bold">Premium</span>
+                  <span className="text-lg text-gray-600 ml-2">Con suscripción</span>
                 </div>
                 
                 <ul className="space-y-4 mb-8">

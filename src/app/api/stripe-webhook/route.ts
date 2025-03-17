@@ -6,8 +6,7 @@ import { supabase } from '@/utils/supabase-server';
 // Updated to match the IDs in checkout/route.ts
 const PRICE_TO_TIER_MAP: Record<string, string> = {
   'price_1QycLQJE3OWBK5PL6VmBe6Lm': 'monthly',
-  'price_1QycM0JE3OWBK5PLslLu6zhM': 'annual',
-  'price_1QycMJJE3OWBK5PL2cuCwqMe': 'lifetime'
+  'price_1QycM0JE3OWBK5PLslLu6zhM': 'annual'
 };
 
 const relevantEvents = new Set([
@@ -51,13 +50,8 @@ export async function POST(req: Request) {
           // Determine the tier based on the price ID
           const tier = priceId ? (PRICE_TO_TIER_MAP[priceId] || 'default') : 'default';
           
-          // For lifetime subscriptions, set a far-future end date (10 years)
+          // Set period end based on subscription data
           let periodEnd = new Date(subscription.current_period_end * 1000);
-          if (tier === 'lifetime') {
-            const tenYearsFromNow = new Date();
-            tenYearsFromNow.setFullYear(tenYearsFromNow.getFullYear() + 10);
-            periodEnd = tenYearsFromNow;
-          }
           
           console.log('Upserting subscription:', {
             id: subscription.id,
@@ -135,13 +129,8 @@ export async function POST(req: Request) {
             // Determine the tier based on the price ID
             const tier = priceId ? (PRICE_TO_TIER_MAP[priceId] || 'default') : 'default';
             
-            // For lifetime subscriptions, set a far-future end date (10 years)
+            // Set period end based on subscription data
             let periodEnd = new Date(subscription.current_period_end * 1000);
-            if (tier === 'lifetime') {
-              const tenYearsFromNow = new Date();
-              tenYearsFromNow.setFullYear(tenYearsFromNow.getFullYear() + 10);
-              periodEnd = tenYearsFromNow;
-            }
             
             // Update the user's subscription in the database
             console.log('Upserting from checkout.session.completed:', {

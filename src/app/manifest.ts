@@ -2,8 +2,8 @@ import { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'ControlCash',
-    short_name: 'ControlCash',
+    name: 'BudgetCash',
+    short_name: 'BudgetCash',
     description: 'Aplicación para gestionar presupuestos personales mensuales',
     start_url: '/',
     display: 'standalone',
