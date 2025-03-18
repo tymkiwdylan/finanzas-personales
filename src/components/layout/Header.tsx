@@ -82,7 +82,6 @@ export function Header() {
               <button
                 onClick={async () => {
                   await signOut();
-                  router.push('/auth/login');
                 }}
                 className="flex items-center text-sm hover:text-sky-200"
               >
@@ -192,7 +191,6 @@ export function Header() {
                     onClick={async () => {
                       await signOut();
                       setMobileMenuOpen(false);
-                      router.push('/auth/login');
                     }}
                     className="flex items-center hover:text-sky-200"
                   >

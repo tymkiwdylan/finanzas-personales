@@ -97,7 +97,7 @@ export default function LandingPage() {
             <div className="md:w-1/2">
               <div className="rounded-lg bg-white shadow-xl p-2 border border-gray-200">
                 <img
-                  src="/dashboard-preview.jpg"
+                  src="/screenshots/desktop.png"
                   alt="Dashboard de BudgetCash"
                   className="rounded-md w-full"
                   onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
@@ -235,7 +235,7 @@ export default function LandingPage() {
             />
             <FaqItem 
               question="¿Puedo usar ControlCash en mi celular?"
-              answer="Sí, ControlCash está diseñado para funcionar perfectamente en dispositivos móviles, y puedes instalarlo como una aplicación en tu pantalla de inicio."
+              answer="Sí, ControlCash está diseñado para funcionar perfectamente en dispositivos móviles con una interfaz adaptada para pantallas pequeñas."
             />
             <FaqItem 
               question="¿Necesito conocimientos financieros para usar ControlCash?"

@@ -3,12 +3,10 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export async function middleware(req: NextRequest) {
-
-
   const res = NextResponse.next();
-
   const pathname = req.nextUrl.pathname;
-  // Allow all PWA-related static assets to bypass the middleware
+
+  // Allow all static assets to bypass authentication checking
   if (
     pathname.includes('/sw.js') ||
     pathname.includes('/workbox') ||
@@ -23,42 +21,58 @@ export async function middleware(req: NextRequest) {
     return res; // Serve the file directly without further processing
   }
   
+  // Create Supabase client
   const supabase = createMiddlewareClient({ req, res });
   
+  // Get session with minimal calls to prevent rate limiting
   const {
     data: { session },
   } = await supabase.auth.getSession();
 
-  const { data: subscription } = await supabase
-  .from('subscriptions')
-  .select('subscription_status')
-  .eq('user_id', session?.user?.id)
-  .single()
+  // Only fetch subscription data if user is logged in and accessing protected routes
+  let subscription = null;
+  if (session?.user?.id) {
+    // Optimize subscription check - only perform for protected routes
+    const isPublicPath = isPublicRoute(pathname);
+    
+    if (!isPublicPath) {
+      const { data } = await supabase
+        .from('subscriptions')
+        .select('subscription_status')
+        .eq('user_id', session.user.id)
+        .single();
+      subscription = data;
+    }
+  }
 
 
   
-  // Paths that don't require authentication
-  const publicPaths = [
-    '/', // Root path (landing page) should be accessible without authentication
-    '/auth/login', 
-    '/auth/register', 
-    '/auth/reset-password', 
-    '/auth/update-password',
-    '/auth/callback',
-    '/pricing',
-    '/api/checkout',
-    '/api/stripe-webhook'
-  ];
+  // Function to check if a route is public
+  function isPublicRoute(path: string): boolean {
+    const publicPaths = [
+      '/', // Root path (landing page) should be accessible without authentication
+      '/auth/login', 
+      '/auth/register', 
+      '/auth/reset-password', 
+      '/auth/update-password',
+      '/auth/callback',
+      '/pricing',
+      '/api/checkout',
+      '/api/stripe-webhook'
+    ];
+    
+    return publicPaths.some(publicPath => 
+      path === publicPath || 
+      path.startsWith(`${publicPath}/`)
+    );
+  }
   
   // Special handling for Stripe webhook to ensure it's always public
   if (req.nextUrl.pathname.startsWith('/api/stripe-webhook')) {
     return res;
   }
 
-  const isPublicPath = publicPaths.some(path => 
-    req.nextUrl.pathname === path || 
-    req.nextUrl.pathname.startsWith(`${path}/`)
-  );
+  const isPublicPath = isPublicRoute(pathname);
 
   
 
@@ -91,14 +105,14 @@ export async function middleware(req: NextRequest) {
   }
   
   if (session && isPublicPath) {
-    // Only redirect from auth pages if the user is already logged in
-    // Don't redirect from the landing page (/) or other public non-auth pages
+    // Check if this is the root path or an auth path
+    const isRootPath = req.nextUrl.pathname === '/';
     const isAuthPath = req.nextUrl.pathname.startsWith('/auth/');
     
-    if (isAuthPath) {
-      // Redirect to dashboard if accessing auth page with active session
+    if (isRootPath || isAuthPath) {
+      // Redirect to dashboard if accessing root or auth page with active session
       const redirectUrl = req.nextUrl.clone();
-      redirectUrl.pathname = '/';
+      redirectUrl.pathname = '/dashboard';
       return NextResponse.redirect(redirectUrl);
     }
   }

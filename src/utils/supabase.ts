@@ -10,12 +10,81 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOi
 // For server-side usage
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
 
-// For client-side usage with auth
+// Cache for authentication to reduce API calls
+let authSessionCache: {
+  session: any;
+  expiresAt: number;
+} | null = null;
+
+// Keep track of refresh token promise to prevent multiple refreshes
+let refreshPromise: Promise<any> | null = null;
+
+// For client-side usage with auth - optimized to reduce token refresh calls
 export const createClientBrowser = () => {
-  return createClientComponentClient<Database>({
+  // Create the Supabase client with default options
+  const client = createClientComponentClient<Database>({
     supabaseUrl,
-    supabaseKey: supabaseAnonKey,
+    supabaseKey: supabaseAnonKey
   });
+  
+  // Add token refresh management to avoid excessive refreshes
+  const originalGetSession = client.auth.getSession.bind(client.auth);
+  client.auth.getSession = async () => {
+    // 1. Check if we have a cached session that's still valid
+    if (authSessionCache && authSessionCache.expiresAt > Date.now()) {
+      console.log('Using cached session');
+      return { data: { session: authSessionCache.session }, error: null };
+    }
+    
+    // 2. Use existing refresh promise if one is already in progress
+    if (refreshPromise) {
+      console.log('Using in-progress token refresh');
+      try {
+        await refreshPromise;
+        return { data: { session: authSessionCache?.session || null }, error: null };
+      } catch (error) {
+        console.error('Error with existing refresh promise:', error);
+        refreshPromise = null;
+      }
+    }
+    
+    // 3. Create a new refresh promise
+    console.log('Creating new token refresh');
+    refreshPromise = new Promise(async (resolve, reject) => {
+      try {
+        const result = await originalGetSession();
+        
+        if (result.data.session) {
+          // Calculate actual expiry time (session expires in 1 hour by default)
+          // Cache for slightly less to be safe (55 minutes)
+          authSessionCache = {
+            session: result.data.session,
+            expiresAt: Date.now() + 55 * 60 * 1000
+          };
+        }
+        
+        resolve(result);
+      } catch (error) {
+        console.error('Error refreshing token:', error);
+        reject(error);
+      } finally {
+        // Clear the promise after a short delay to prevent immediate subsequent calls
+        setTimeout(() => {
+          refreshPromise = null;
+        }, 1000);
+      }
+    });
+    
+    try {
+      const result = await refreshPromise;
+      return result;
+    } catch (error) {
+      console.error('Failed to refresh token:', error);
+      return { data: { session: null }, error: error as any };
+    }
+  };
+  
+  return client;
 };
 
 // Helper to get the current user ID

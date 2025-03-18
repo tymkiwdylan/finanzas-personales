@@ -3,6 +3,10 @@
 import React, { useEffect, useState } from 'react';
 
 export default function PWAInstaller() {
+  // Component disabled
+  return null;
+  
+  /*
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallButton, setShowInstallButton] = useState(false);
 
@@ -11,7 +15,7 @@ export default function PWAInstaller() {
 
     // Force show install button for testing if needed
     // For debugging purposes, we'll show the button anyway
-    setShowInstallButton(true);
+    // setShowInstallButton(true);
 
     // Handle PWA installation prompt
     window.addEventListener('beforeinstallprompt', (e) => {
@@ -20,8 +24,8 @@ export default function PWAInstaller() {
       // Stash the event so it can be triggered later
       setDeferredPrompt(e);
       // Update UI to show the installation button
-      setShowInstallButton(true);
-      console.log('Install prompt captured! Button should now be visible.');
+      // setShowInstallButton(true);
+      console.log('Install prompt captured but button is disabled.');
     });
 
     // Handle installed PWA
@@ -89,27 +93,6 @@ export default function PWAInstaller() {
     console.log('PWA install button visible:', showInstallButton);
   }, [showInstallButton]);
 
-  // Always render a container but only show the button when appropriate
-  return (
-    <div className="fixed bottom-4 right-4 z-50">
-      {showInstallButton ? (
-        <button
-          onClick={handleInstallClick}
-          className="flex items-center space-x-2 bg-sky-600 hover:bg-sky-700 text-white font-medium py-2 px-4 rounded-lg shadow-lg transition-colors"
-        >
-          <span className="text-sm">Instalar App</span>
-        </button>
-      ) : (
-        // Debug button - only visible in development
-        process.env.NODE_ENV === 'development' && (
-          <button
-            onClick={() => console.log('PWA install prompt not available yet')}
-            className="flex items-center space-x-2 bg-gray-400 text-white font-medium py-2 px-4 rounded-lg shadow-lg opacity-50"
-          >
-            <span className="text-xs">PWA Debug</span>
-          </button>
-        )
-      )}
-    </div>
-  );
+  // Component disabled - returns null
+  */
 }

@@ -195,7 +195,7 @@ export default function RegisterPage() {
       </div>
       <div className="relative hidden w-0 flex-1 lg:block">
         <div className="absolute inset-0 h-full w-full bg-gradient-to-r from-sky-400 to-sky-600 flex items-center justify-center">
-          <h1 className="text-4xl font-bold text-white">Mi Presupuesto Personal</h1>
+          <h1 className="text-4xl font-bold text-white">BudgetCash</h1>
         </div>
       </div>
     </div>

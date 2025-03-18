@@ -34,20 +34,56 @@ export default function LoginPage() {
     
     try {
       const supabase = createClientBrowser();
-      const { error } = await supabase.auth.signInWithPassword({
-        email: data.email,
-        password: data.password,
-      });
       
-      if (error) {
-        throw error;
+      // Try to sign in with rate limit handling
+      let retryCount = 0;
+      let success = false;
+      let lastError: any = null;
+      
+      while (retryCount < 3 && !success) {
+        try {
+          const { error } = await supabase.auth.signInWithPassword({
+            email: data.email,
+            password: data.password,
+          });
+          
+          if (error) {
+            lastError = error;
+            // If it's a rate limit error, wait and retry
+            if (error.status === 429) {
+              retryCount++;
+              await new Promise(resolve => setTimeout(resolve, 1000 * retryCount)); // Exponential backoff
+              continue;
+            }
+            throw error;
+          }
+          
+          success = true;
+        } catch (e) {
+          lastError = e;
+          break;
+        }
       }
       
-      // Redirect to dashboard on successful login
-      router.push('/');
-      router.refresh();
+      if (success) {
+        // Redirect to dashboard on successful login
+        router.push('/');
+        router.refresh();
+      } else if (lastError) {
+        throw lastError;
+      }
     } catch (error: Error | unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Error al iniciar sesión';
+      let errorMessage = 'Error al iniciar sesión';
+      
+      if (error instanceof Error) {
+        // Handle rate limit error specifically
+        if (error.message.includes('429') || error.message.includes('Too Many Requests')) {
+          errorMessage = 'Demasiados intentos de inicio de sesión. Por favor, espera unos minutos e intenta nuevamente.';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       setError(errorMessage);
     } finally {
       setLoading(false);
