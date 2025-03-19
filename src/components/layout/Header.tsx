@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useBudget } from '@/context/BudgetContext';
 import { useAuth } from '@/context/AuthContext';
 import { Currency } from '@/types';
-import { LogOut, Menu, User, X } from 'lucide-react';
+import { LogOut, Menu, User, X, UserCircle } from 'lucide-react';
 import { updateUserSettings as updateUserSettingsInDb } from '@/utils/supabase';
 
 export function Header() {
@@ -47,6 +47,7 @@ export function Header() {
           <Link href="/ingresos" className="hover:text-sky-200">Ingresos</Link>
           <Link href="/estadisticas" className="hover:text-sky-200">Estadísticas</Link>
           <Link href="/configuracion" className="hover:text-sky-200">Configuración</Link>
+          {user && <Link href="/perfil" className="hover:text-sky-200">Perfil</Link>}
           
           <div className="flex items-center space-x-2">
             <button
@@ -75,10 +76,10 @@ export function Header() {
             <div className="animate-pulse px-3 py-1 bg-sky-600 rounded">Cargando...</div>
           ) : user ? (
             <div className="flex items-center space-x-4">
-              <div className="flex items-center">
-                <User className="h-4 w-4 mr-1" />
+              <Link href="/perfil" className="flex items-center hover:text-sky-200">
+                <UserCircle className="h-4 w-4 mr-1" />
                 <span className="text-sm">{user.email?.split('@')[0]}</span>
-              </div>
+              </Link>
               <button
                 onClick={async () => {
                   await signOut();
@@ -148,6 +149,15 @@ export function Header() {
             >
               Configuración
             </Link>
+            {user && (
+              <Link 
+                href="/perfil" 
+                className="hover:text-sky-200"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Perfil
+              </Link>
+            )}
             
             <div className="flex items-center space-x-2 pb-3">
               <button
@@ -183,10 +193,14 @@ export function Header() {
                 <div className="animate-pulse px-3 py-1 bg-sky-600 rounded">Cargando...</div>
               ) : user ? (
                 <div className="space-y-3">
-                  <div className="flex items-center">
-                    <User className="h-4 w-4 mr-2" />
+                  <Link 
+                    href="/perfil" 
+                    className="flex items-center hover:text-sky-200"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <UserCircle className="h-4 w-4 mr-2" />
                     <span>{user.email}</span>
-                  </div>
+                  </Link>
                   <button
                     onClick={async () => {
                       await signOut();

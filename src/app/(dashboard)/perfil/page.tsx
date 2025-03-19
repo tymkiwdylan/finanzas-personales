@@ -7,7 +7,8 @@ import { createClientBrowser } from '@/utils/supabase';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { User } from 'lucide-react';
+import { User, CreditCard } from 'lucide-react';
+import { Layout } from '@/components/layout/Layout';
 
 const profileSchema = z.object({
   email: z.string().email('Email inválido').min(1, 'El email es requerido').optional(),
@@ -33,6 +34,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [isManagingSubscription, setIsManagingSubscription] = useState(false);
   
   const { register, handleSubmit, formState: { errors } } = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -77,6 +79,36 @@ export default function ProfilePage() {
       setLoading(false);
     }
   };
+
+  const handleManageSubscription = async () => {
+    if (!user) return;
+    
+    try {
+      setIsManagingSubscription(true);
+      setError(null);
+      
+      const response = await fetch('/api/customer-portal', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId: user.id }),
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Error al acceder al portal de facturación');
+      }
+      
+      // Redirect to Stripe Customer Portal
+      window.location.href = data.url;
+      
+    } catch (error: any) {
+      setError(error.message || 'Error al acceder al portal de facturación');
+      setIsManagingSubscription(false);
+    }
+  };
   
   if (isLoading) {
     return (
@@ -87,7 +119,7 @@ export default function ProfilePage() {
   }
   
   return (
-    <div className="container mx-auto px-4 py-8">
+    <Layout>
       <div className="max-w-3xl mx-auto">
         <div className="bg-white shadow rounded-lg p-6 md:p-8">
           <div className="flex items-center mb-8">
@@ -190,8 +222,24 @@ export default function ProfilePage() {
                 </div>
               </div>
             </div>
+
+            <div className="border-t border-gray-200 pt-6">
+              <h2 className="text-lg font-medium text-gray-900 mb-4">Gestionar Suscripción</h2>
+              <p className="text-sm text-gray-600 mb-4">
+                Gestiona tu plan, método de pago y ciclo de facturación a través del portal de Stripe.  
+              </p>
+              <button
+                type="button"
+                onClick={handleManageSubscription}
+                disabled={isManagingSubscription}
+                className="inline-flex items-center rounded-md border border-transparent bg-sky-100 py-2 px-4 text-sm font-medium text-sky-700 hover:bg-sky-200 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
+              >
+                <CreditCard className="mr-2 h-4 w-4" aria-hidden="true" />
+                {isManagingSubscription ? 'Redirigiendo...' : 'Gestionar Suscripción'}
+              </button>
+            </div>
             
-            <div className="flex justify-end">
+            <div className="flex justify-end mt-6">
               <button
                 type="submit"
                 disabled={loading}
@@ -203,6 +251,6 @@ export default function ProfilePage() {
           </form>
         </div>
       </div>
-    </div>
+    </Layout>
   );
 }
