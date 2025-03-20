@@ -32,7 +32,7 @@ export default function ResetPasswordPage() {
     try {
       const supabase = createClientBrowser();
       const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
-        redirectTo: `${window.location.origin}/auth/update-password`,
+        redirectTo: `https://budgetcash.tech/auth/update-password`,
       });
       
       if (error) {

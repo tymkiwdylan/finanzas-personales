@@ -111,86 +111,154 @@ function ExpensesList() {
         </div>
       </div>
       
-      {/* Expenses Table */}
+      {/* Expenses Table/Cards */}
       <div className="bg-white shadow overflow-hidden rounded-lg border">
         {filteredExpenses.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Fecha
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Descripción
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Categoría
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Monto
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Acciones
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredExpenses.map((expense: Expense) => (
-                  <tr key={expense.id} className={`hover:bg-gray-50 ${expense.isRecurring ? 'bg-blue-50' : ''}`}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(expense.date).toLocaleDateString('es-AR')}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {expense.description}
-                      {expense.isRecurring && (
-                        <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          Recurrente {expense.recurringFrequency === 'daily' ? 'diario' : 
-                                      expense.recurringFrequency === 'weekly' ? 'semanal' : 
-                                      expense.recurringFrequency === 'monthly' ? 'mensual' : 
-                                      expense.recurringFrequency === 'yearly' ? 'anual' : ''}
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">
-                      {expense.category}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600 font-medium">
-                      {formatCurrency(
-                        expense.currency === selectedCurrency 
-                          ? expense.amount 
-                          : expense.currency === 'USD' 
-                              ? expense.amount * exchangeRate 
-                              : expense.amount / exchangeRate,
-                        selectedCurrency
-                      )}
-                      {expense.currency !== selectedCurrency && (
-                        <span className="ml-1 text-xs text-gray-500">
-                          ({formatCurrency(expense.amount, expense.currency)})
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => router.push(`/gastos/editar/${expense.id}`)}
-                          className="text-sky-600 hover:text-sky-900"
-                        >
-                          <Edit className="h-5 w-5" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(expense.id)}
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          <Trash2 className="h-5 w-5" />
-                        </button>
-                      </div>
-                    </td>
+          <>
+            {/* Table for medium and large screens */}
+            <div className="hidden sm:block overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Fecha
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Descripción
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Categoría
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Monto
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Acciones
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredExpenses.map((expense: Expense) => (
+                    <tr key={expense.id} className={`hover:bg-gray-50 ${expense.isRecurring ? 'bg-blue-50' : ''}`}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {new Date(expense.date).toLocaleDateString('es-AR')}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {expense.description}
+                        {expense.isRecurring && (
+                          <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            Recurrente {expense.recurringFrequency === 'daily' ? 'diario' : 
+                                        expense.recurringFrequency === 'weekly' ? 'semanal' : 
+                                        expense.recurringFrequency === 'monthly' ? 'mensual' : 
+                                        expense.recurringFrequency === 'yearly' ? 'anual' : ''}
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">
+                        {expense.category}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600 font-medium">
+                        {formatCurrency(
+                          expense.currency === selectedCurrency 
+                            ? expense.amount 
+                            : expense.currency === 'USD' 
+                                ? expense.amount * exchangeRate 
+                                : expense.amount / exchangeRate,
+                          selectedCurrency
+                        )}
+                        {expense.currency !== selectedCurrency && (
+                          <span className="ml-1 text-xs text-gray-500">
+                            ({formatCurrency(expense.amount, expense.currency)})
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => router.push(`/gastos/editar/${expense.id}`)}
+                            className="text-sky-600 hover:text-sky-900"
+                          >
+                            <Edit className="h-5 w-5" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(expense.id)}
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            <Trash2 className="h-5 w-5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            
+            {/* Cards for small screens */}
+            <div className="sm:hidden divide-y divide-gray-200">
+              {filteredExpenses.map((expense: Expense) => (
+                <div key={expense.id} className={`p-4 ${expense.isRecurring ? 'bg-blue-50' : ''}`}>
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="text-sm font-medium text-gray-900">{expense.description}</h3>
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => router.push(`/gastos/editar/${expense.id}`)}
+                        className="text-sky-600 hover:text-sky-900"
+                      >
+                        <Edit className="h-5 w-5" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(expense.id)}
+                        className="text-red-600 hover:text-red-900"
+                      >
+                        <Trash2 className="h-5 w-5" />
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {expense.isRecurring && (
+                    <div className="mb-2">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        Recurrente {expense.recurringFrequency === 'daily' ? 'diario' : 
+                                    expense.recurringFrequency === 'weekly' ? 'semanal' : 
+                                    expense.recurringFrequency === 'monthly' ? 'mensual' : 
+                                    expense.recurringFrequency === 'yearly' ? 'anual' : ''}
+                      </span>
+                    </div>
+                  )}
+                  
+                  <div className="grid grid-cols-3 gap-4 text-sm">
+                    <div>
+                      <p className="text-gray-500">Fecha</p>
+                      <p className="font-medium">{new Date(expense.date).toLocaleDateString('es-AR')}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500">Categoría</p>
+                      <p className="font-medium capitalize">{expense.category}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500">Monto</p>
+                      <p className="font-medium text-red-600">
+                        {formatCurrency(
+                          expense.currency === selectedCurrency 
+                            ? expense.amount 
+                            : expense.currency === 'USD' 
+                                ? expense.amount * exchangeRate 
+                                : expense.amount / exchangeRate,
+                          selectedCurrency
+                        )}
+                        {expense.currency !== selectedCurrency && (
+                          <span className="ml-1 text-xs text-gray-500">
+                            ({formatCurrency(expense.amount, expense.currency)})
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         ) : (
           <div className="p-8 text-center text-gray-500">
             No hay gastos {filterCategory ? `en la categoría ${filterCategory}` : 'registrados'}.
