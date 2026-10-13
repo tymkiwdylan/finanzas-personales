@@ -1,36 +1,64 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Finanzas Personales
 
-## Getting Started
+A personal finance web application built with Next.js, React, TypeScript, and Supabase. It brings income, expenses, recurring transactions, and statistics into a dashboard, with account management, Stripe subscription flows, and PWA installation support.
 
-First, run the development server:
+## Product areas
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Income and expense creation, editing, and listing.
+- Recurring transaction configuration and processing.
+- Dashboard and statistics views.
+- Registration, login, password recovery, and profile management.
+- Stripe checkout, customer portal, and webhook routes.
+- PWA manifest, installation UI, service worker, and offline fallback.
+
+## Stack
+
+Next.js 15 App Router · React 19 · TypeScript · Tailwind CSS · Supabase · Stripe · Chart.js.
+
+## Local development
+
+The repository specifies `pnpm@10.5.2` in `package.json`.
+
+```sh
+git clone https://github.com/tymkiwdylan/finanzas-personales.git
+cd finanzas-personales
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Create `.env.local` with your own Supabase configuration:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```dotenv
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+NEXT_PUBLIC_BASE_URL=http://localhost:3000
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Configure a development Supabase database to match the types in `src/types/supabase.ts`, and review the incremental SQL files in `migrations/`. The repository does not include a complete initial database migration.
 
-## Learn More
+To exercise billing, configure your own Stripe test credentials and webhook signing secret. The variables used by the code include `NEXT_PUBLIC_STRIPE_PUBLIC_KEY`, `STRIPE_SECRET_KEY`, and `STRIPE_WEBHOOK_SECRET`; live-mode configuration also exists in `src/utils/stripe/config.ts`. Keep server secrets outside version control.
 
-To learn more about Next.js, take a look at the following resources:
+```sh
+pnpm dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Open `http://localhost:3000`. Production-mode commands are `pnpm build` and `pnpm start`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Repository map
 
-## Deploy on Vercel
+| Location | Purpose |
+| --- | --- |
+| `src/app/(dashboard)` | Income, expenses, statistics, settings, and profile screens |
+| `src/app/auth` | Authentication and password-reset flows |
+| `src/app/api` | Stripe checkout, customer portal, and webhook handlers |
+| `src/context` | Authentication and budget state |
+| `src/utils` | Supabase, Stripe, currency, and service-worker helpers |
+| `migrations` | Incremental database changes |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Further documentation
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [Recurring transaction behavior](docs/recurring-transactions.md)
+- [PWA implementation and manual checks](PWA-README.md)
+- [Package manager conventions](docs/package-manager.md)
+- [Vercel deployment configuration](docs/vercel-deployment.md)
+
+PWA support includes an offline fallback; it should not be interpreted as complete offline transaction synchronization.
